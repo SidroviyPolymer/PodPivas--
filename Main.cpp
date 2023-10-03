@@ -1,6 +1,7 @@
 #include <iostream>
 
 int main() {
-	std::cout << L"Я компилю, блеать" << std::endl;
+	setlocale(LC_ALL, "RUS");
+	std::cout << "Я компилю, блеать" << std::endl;
 	return 0;
 }
