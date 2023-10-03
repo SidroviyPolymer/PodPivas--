@@ -1,0 +1,25 @@
+<program> ::= <program-name> <declarations> BEGIN <stmt-list> END.
+<program-name> ::= PROGRAM <id>; | NULL
+<declarations> ::= <declaration> | <declaration> <declarations> | NULL
+<declaration> ::= <const-dec> | <var-dec> | <proc>
+<const-dec> ::= CONST <const-list> | NULL
+<const-list> ::= <const>; | <const>; <const-list>
+<const> ::= <id> = <number>
+<var-dec> ::= VAR <dec-list> | NULL;
+<dec-list> ::= <dec>; | <dec>; <dec-list>
+<dec> ::= <id> : <type> | <id> : <type> = <number>
+<proc> ::= PROCEDURE <id>(<param-list>) <proc-body>
+<param-list> ::= <param> | <param>, <param-list> | NULL
+<param> ::= <id> : type | var <id> : <type>
+<proc-body> ::= <const-dec> <var-dec> <proc-dec> BEGIN <stmt-list> END;
+<stmt-list> ::= <stmt>; | <stmt>; <stmt-list> | NULL
+<stmt> ::= <assign> | <writeln> | <call>
+<assign> ::= <id> := <expr>
+<expr> ::= <term> | <expr> + <term> | <expr> - <term>                  #В СКОБКАХ ДОБАВИТЬ
+<term> ::= <factor> | <term> * <factor> | <term> / <factor>
+<factor> ::= <id> | <number> | <expr>
+<writeln> ::= WRITELN(<id-list>)
+<id-list> ::= <id> | <id>, <id-list> | NULL
+<call> ::= <proc-name>(<id-list>)
+<number> ::= <digit> | <digit> <number> | $<number>
+<digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F 
