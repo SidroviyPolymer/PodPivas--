@@ -1,6 +1,6 @@
 1)<program>::=PROGRAM <name>(<file_name>{,<file_name>});<block>.
 2)<file_name>::=<name>
-3)<name>::=<letter>{<letter>|<digit>}
+3)<name>::=<letter>[{<letter>|<digit>}]
 4)<block>::=<constants_section><variables_section><procedures_section><operators_section> 
 5)<constants_section>::=<null>|CONST <definition_constant>;{<definition_constant>;}
 6)<definition_constant>::=<name>=<constant>
