@@ -1,0 +1,37 @@
+1)<program>::=PROGRAM <name>(<file_name>{,<file_name>});<block>.
+2)<file_name>::=<name>
+3)<name>::=<letter>{<letter>|<digit>}
+4)<block>::=<constants_section><variables_section><procedures_section><operators_section> 
+5)<constants_section>::=<null>|CONST <definition_constant>;{<definition_constant>;}
+6)<definition_constant>::=<name>=<constant>
+7)<constant>::=<unsigned_number>|<sign><unsigned_number>|<constant_name>|<sign><constant_name>
+8)<unsigned_number>::=<unsigned_integer>
+9)<unsigned_integer>=<digit>{<digit>}
+10)<sign>::=+|-
+11)<constant_name>::=<name>
+12)<variables_section>::= VAR <description_similar_var>;{<description_similar_var>;}|<null>
+13)<description_similar_var>::=<name>{,<name>}:INTEGER
+14)<procedures_section>::={<description_procedure>;}
+15)<description_procedure>::=<title_procedure>|<block>
+16)<title_procedure>::= PROCEDURE <procedure_name>;| PROCEDURE <procedure_name>(<formal_var_section>{;<formal_var_section>});
+17)<formal_var_section>::=<group_var>|VAR <group_var> PROCEDURE <procedure_name>{,<procedure_name>}
+18)<group_var>::=<name>{,<name>}:INTEGER
+19)<operators_section>::=<соmpound_operator>
+20)<соmpound_operator>::= BEGIN <operator>{;<operator>} END
+21)<operator>::=<simple_operator>|<complex_operator>
+22)<simple_operator>::=<assignment_operator>|<procedure_operator>|<exit_operator>|<null_operator>
+23)<assignment_operator>::=<variable>=<expression>
+24)<variable>::=<variable_name>
+25)<variable_name>::=<name>
+26)<expression>::=<sign><term>{<additive_operation><term>}
+27)<additive_operation>::=+|-
+28)<term>::=<factor>{<multiplicative_operation><factor>}
+29)<multiplicative_operation>::=*|/
+30)<factor>::=<variable>|<unsigned_constant>|(<expression>)
+31)<unsigned_constant>::=<unsigned_number>|<constant_name>|NIL
+32)<procedure_operator>::=<procedure_name>|<procedure_name>(<actual_operator>{,<actual_operator>})
+33)<procedure_name>::=<name>
+34)<actual_operator>=<expression>|<variable>|<procedure_name>
+35)<null_operator>=NULL
+36)<complex_operator>::=<соmpound_operator>
+37)<exit_operator>::=EXIT
