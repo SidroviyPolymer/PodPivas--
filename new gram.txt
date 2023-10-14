@@ -1,12 +1,12 @@
 <program>::=PROGRAM <name>(<file_name>{,<file_name>});<block>.
 <file_name>::=<name>
-<name>::=<letter>[{<letter>|<digit>}]
+                                                                                            <name>::=<letter>[{<letter>|<digit>}]
 <block>::=<constants_section><variables_section><procedures_section><operators_section> 
 <constants_section>::=<null>|CONST <definition_constant>;{<definition_constant>;}
 <definition_constant>::=<name>=<constant>
 <constant>::=<unsigned_number>|<sign><unsigned_number>|<constant_name>|<sign><constant_name>
 <unsigned_number>::=<unsigned_integer>
-<unsigned_integer>=<digit>[{<digit>}]
+                                                                                            <unsigned_integer>=<digit>[{<digit>}]
 <sign>::=+|-
 <constant_name>::=<name>
 <variables_section>::= VAR <description_similar_var>;[{<description_similar_var>;}]|<null>
