@@ -1,9 +1,0 @@
-﻿
-#include <iostream>
-
-int main()
-{
-    
-}
-
-
