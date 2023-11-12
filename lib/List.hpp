@@ -1,9 +1,5 @@
 #pragma once
-<<<<<<< Updated upstream
 #include "ListElem.hpp"
-=======
-#include "Elem.hpp"
->>>>>>> Stashed changes
 
 template <typename T>
 class List {

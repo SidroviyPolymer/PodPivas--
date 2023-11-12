@@ -10,13 +10,8 @@
 
 
 int main() {
-	int a;
-	cin >> a;
-	ID dd(22, "da");
-	cout << "Good";
-	ErrorProcessor* ep = new ErrorProcessor();
-	List<int>* l = new List<int>(1, 2, 3);
-	for (size_t idx = 0; idx < l->Length(); ++idx)
-		std::cout << l->At(idx);
+	Lexer* lx = new Lexer();
+	std::string fileSrc = "prog.txt";
+	lx->OpenFile("../" + fileSrc);
 	return 0;
 }
