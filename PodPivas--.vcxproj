@@ -129,11 +129,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="lib\Elem.cpp" />
     <ClCompile Include="lib\Error.cpp" />
-    <ClCompile Include="lib\List.cpp" />
     <ClCompile Include="lib\Token.cpp" />
-    <ClCompile Include="lib\Tree.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Module\ErrorProcessor.cpp" />
     <ClCompile Include="Module\Generator.cpp" />

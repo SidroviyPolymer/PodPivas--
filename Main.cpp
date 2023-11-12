@@ -6,13 +6,6 @@
 #include "Module/Generator.h"
 #include "Module/Lexer.h"
 #include "Module/Syntax.h"
-//#include "lib/Token.h"
-//#include "lib/List.h"
-//#include "lib/Tree.h"
-//#include "ErrorProcessor.h"
-//#include "Generator.h"
-//#include "Lexer.h"
-//#include "Syntax.h"
 
 int main() {
 	ErrorProcessor* ep = new ErrorProcessor();
