@@ -1,2 +1,5 @@
+var a : integer;
+
 begin
+a := b; b := a;
 end.

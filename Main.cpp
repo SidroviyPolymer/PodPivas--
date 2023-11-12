@@ -8,7 +8,6 @@
 #include "Module/Syntax.h"
 #include "lib/ID.hpp"
 
-
 int main() {
 	Lexer* lx = new Lexer();
 	std::string fileSrc = "prog.txt";
