@@ -138,11 +138,11 @@
     <ClCompile Include="Module\Syntax.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lib\Elem.h" />
+    <ClInclude Include="lib\Elem.hpp" />
     <ClInclude Include="lib\Error.h" />
-    <ClInclude Include="lib\List.h" />
+    <ClInclude Include="lib\List.hpp" />
     <ClInclude Include="lib\Token.h" />
-    <ClInclude Include="lib\Tree.h" />
+    <ClInclude Include="lib\Tree.hpp" />
     <ClInclude Include="Module\ErrorProcessor.h" />
     <ClInclude Include="Module\Generator.h" />
     <ClInclude Include="Module\Lexer.h" />
