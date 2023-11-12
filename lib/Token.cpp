@@ -2,4 +2,6 @@
 
 Token::Token() {}
 
-Token::Token(int a) {}
+Token::Type Token::GetType() { return type; }
+
+std::string& Token::GetContent() { return content; }
