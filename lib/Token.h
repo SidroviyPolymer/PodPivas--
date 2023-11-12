@@ -1,5 +1,21 @@
 #pragma once
-class Token
-{
+#include <string>
+
+class Token {
+public:
+	enum Type {
+		Id,
+		Const,
+		Terminal
+	};
+
+private:
+	std::string content;
+	Type type;
+
+public:
+	Token();
+
+	Token(int);
 };
 
