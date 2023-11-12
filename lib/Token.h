@@ -11,11 +11,12 @@ public:
 
 private:
 	std::string content;
-	Type type;
+	Type type; 
 
 public:
 	Token();
 
-	Token(int);
-};
+	Type GetType();
 
+	std::string& GetContent();
+};

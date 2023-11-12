@@ -1,11 +1,11 @@
 #pragma once
-#include "Elem.h"
+#include "ListElem.hpp"
 
 template <typename T>
 class List {
 private:
-    Elem<T>* begin;
-    Elem<T>* end;
+    ListElem<T>* begin;
+    ListElem<T>* end;
     size_t size;
 
     template <typename... Args>
@@ -15,7 +15,7 @@ private:
 
     void CreateList();
 
-    Elem<T>* FindByIdx(size_t idx);
+    ListElem<T>* FindByIdx(size_t idx);
 public:
 
     List();
@@ -74,7 +74,7 @@ List<T>::List() {
 }
 
 template <typename T>
-Elem<T>* List<T>::FindByIdx(size_t idx) {
+ListElem<T>* List<T>::FindByIdx(size_t idx) {
 	if (size == 0)
 		throw std::exception("List: the list was empty.");
 
@@ -84,7 +84,7 @@ Elem<T>* List<T>::FindByIdx(size_t idx) {
 	bool forward = idx < (size - 1 - idx);
 	size_t counts = std::min(idx, size - 1 - idx);
 
-	Elem<T>* start = forward ? begin : end;
+	ListElem<T>* start = forward ? begin : end;
 	for (size_t counter = 0; counter < counts; ++counter)
 		start = forward ? start->next : start->prev;
 
@@ -112,12 +112,12 @@ void List<T>::Push_front(T& data) {
 	++size;
 
 	if (begin == nullptr) {
-		begin = new Elem<T>(data);
+		begin = new ListElem<T>(data);
 		end = begin;
 		return;
 	}
 
-	begin = new Elem<T>(data, nullptr, begin);
+	begin = new ListElem<T>(data, nullptr, begin);
 }
 
 template <typename T>
@@ -125,12 +125,12 @@ void List<T>::Push_back(T& data) {
 	++size;
 
 	if (begin == nullptr) {
-		begin = new Elem<T>(data);
+		begin = new ListElem<T>(data);
 		end = begin;
 		return;
 	}
 
-	end->next = new Elem<T>(data, end, nullptr);
+	end->next = new ListElem<T>(data, end, nullptr);
 	end = end->next;
 }
 
@@ -146,8 +146,8 @@ void List<T>::Push_at(size_t idx, T& data) {
 		return;
 	}
 
-	Elem<T>* tmp = FindByIdx(idx - 1);
-	tmp->next = new Elem<T>(data, tmp, tmp->next);
+	ListElem<T>* tmp = FindByIdx(idx - 1);
+	tmp->next = new ListElem<T>(data, tmp, tmp->next);
 	++size;
 }
 
@@ -189,7 +189,7 @@ T& List<T>::Pop_at(size_t idx) {
 	if (idx == size)
 		return Pop_back();
 
-	Elem<T>* tmp_ptr = FindByIdx(idx);
+	ListElem<T>* tmp_ptr = FindByIdx(idx);
 	T tmp = tmp_ptr->data;
 	tmp_ptr->prev->next = tmp_ptr->next;
 	--size;
