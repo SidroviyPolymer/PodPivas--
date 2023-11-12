@@ -1,5 +1,6 @@
 #include "List.h"
 #include <exception>
+#include <algorithm>
 
 template <typename T>
 template <typename... Args>
@@ -25,7 +26,7 @@ List<T>::List() {
 }
 
 template <typename T>
-List<T>::Elem* List<T>::FindByIdx(size_t idx) {
+Elem<T>* List<T>::FindByIdx(size_t idx) {
 	if (size == 0)
 		throw std::exception("List: the list was empty.");
 
@@ -35,7 +36,7 @@ List<T>::Elem* List<T>::FindByIdx(size_t idx) {
 	bool forward = idx < (size - 1 - idx);
 	size_t counts = std::min(idx, size - 1 - idx);
 
-	Elem* start = forward ? begin : end;
+	Elem<T>* start = forward ? begin : end;
 	for (size_t counter = 0; counter < counts; ++counter)
 		start = forward ? start->next : start->prev;
 
@@ -63,12 +64,12 @@ void List<T>::Push_front(T& data) {
 	++size;
 
 	if (begin == nullptr) {
-		begin = new Elem(data);
+		begin = new Elem<T>(data);
 		end = begin;
 		return;
 	}
 
-	begin = new Elem(data, nullptr, begin);
+	begin = new Elem<T>(data, nullptr, begin);
 }
 
 template <typename T>
@@ -76,12 +77,12 @@ void List<T>::Push_back(T& data) {
 	++size;
 
 	if (begin == nullptr) {
-		begin = new Elem(data);
+		begin = new Elem<T>(data);
 		end = begin;
 		return;
 	}
 
-	end->next = new Elem(data, end, nullptr);
+	end->next = new Elem<T>(data, end, nullptr);
 	end = end->next;
 }
 
@@ -97,8 +98,8 @@ void List<T>::Push_at(size_t idx, T& data) {
 		return;
 	}
 
-	Elem* tmp = FindByIdx(idx - 1);
-	tmp->next = new Elem(data, tmp, tmp->next);
+	Elem<T>* tmp = FindByIdx(idx - 1);
+	tmp->next = new Elem<T>(data, tmp, tmp->next);
 	++size;
 }
 
@@ -140,7 +141,7 @@ T& List<T>::Pop_at(size_t idx) {
 	if (idx == size)
 		return Pop_back();
 
-	Elem tmp_ptr = FindByIdx(idx);
+	Elem<T>* tmp_ptr = FindByIdx(idx);
 	T tmp = tmp_ptr->data;
 	tmp_ptr->prev->next = tmp_ptr->next;
 	--size;
@@ -155,26 +156,7 @@ T& List<T>::At(size_t idx) {
 	return FindByIdx(idx)->data;
 }
 
-
-
-
 template <typename T>
-List<T>::Elem::Elem() {
-	data = NULL;
-	prev = nullptr;
-	next = nullptr;
-}
-
-template <typename T>
-List<T>::Elem::Elem(T& data) {
-	this->data = data;
-	prev = nullptr;
-	next = nullptr;
-}
-
-template <typename T>
-List<T>::Elem::Elem(T& data, Elem* prev, Elem* next) {
-	this->data = data;
-	this->prev = prev;
-	this->next = next;
+size_t List<T>::Length() {
+	return size;
 }

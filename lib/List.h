@@ -1,22 +1,11 @@
 #pragma once
+#include "Elem.h"
 
 template <typename T>
 class List {
 private:
-    class Elem {
-    public:
-        T data;
-        Elem* prev;
-        Elem* next;
-
-
-        Elem();
-        Elem(T& data);
-        Elem(T& data, Elem* prev, Elem* next);
-    };
-
-    Elem* begin;
-    Elem* end;
+    Elem<T>* begin;
+    Elem<T>* end;
     size_t size;
 
     template <typename... Args>
@@ -26,7 +15,7 @@ private:
 
     void CreateList();
 
-    Elem* FindByIdx(size_t idx);
+    Elem<T>* FindByIdx(size_t idx);
 public:
 
     List();
@@ -49,5 +38,7 @@ public:
     T& Pop_at(size_t idx);
 
     T& At(size_t idx);
+
+    size_t Length();
 };
 

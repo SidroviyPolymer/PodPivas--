@@ -1,13 +1,24 @@
 #include <iostream>
-#include "lib/Token.cpp"
-#include "lib/List.cpp"
-#include "lib/Tree.cpp"
-#include "Module/ErrorProcessor.cpp"
-#include "Module/Generator.cpp"
-#include "Module/Lexer.cpp"
-#include "Module/Syntax.cpp"
+#include "lib/Token.h"
+#include "lib/List.h"
+#include "lib/Tree.h"
+#include "Module/ErrorProcessor.h"
+#include "Module/Generator.h"
+#include "Module/Lexer.h"
+#include "Module/Syntax.h"
+//#include "lib/Token.h"
+//#include "lib/List.h"
+//#include "lib/Tree.h"
+//#include "ErrorProcessor.h"
+//#include "Generator.h"
+//#include "Lexer.h"
+//#include "Syntax.h"
 
 int main() {
+	ErrorProcessor* ep = new ErrorProcessor();
 	Token* t = new Token(3);
+	List<int>* l = new List<int>(1, 2, 3);
+	for (size_t idx = 0; idx < l->Length(); ++idx)
+		std::cout << l->At(idx);
 	return 0;
 }
