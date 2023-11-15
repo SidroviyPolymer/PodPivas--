@@ -1,5 +1,12 @@
-var a : integer;
+(*fwe few*)
+// fewfew
+var a : integer (*aaaaaaa*);
+//good
+{noob}
+procedure abc(a, b, c : integer);
 
 begin
-a := b; b := a;
+a := b;{noob}b := 65536; ///aaaaaaaaa
 end.
+
+ya ebal arSeniya

@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <string>
 
 class Token {
@@ -6,7 +7,8 @@ public:
 	enum Type {
 		Id,
 		Const,
-		Terminal
+		Terminal,
+		Operation
 	};
 
 private:
@@ -15,8 +17,11 @@ private:
 
 public:
 	Token();
+	Token(std::string, Type);
 
 	Type GetType();
 
 	std::string& GetContent();
+
+	friend std::ostream& operator<<(std::ostream&, const Token&);
 };

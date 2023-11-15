@@ -9,13 +9,13 @@ private:
     size_t size;
 
     template <typename... Args>
-    void CreateList(T& data, Args... args);
+    void CreateList(T data, Args... args);
 
-    void CreateList(T& data);
+    void CreateList(T data);
 
     void CreateList();
 
-    ListElem<T>* FindByIdx(size_t idx);
+    ListElem<T>* FindByIdx(size_t idx) const;
 public:
 
     List();
@@ -37,9 +37,13 @@ public:
 
     T& Pop_at(size_t idx);
 
-    T& At(size_t idx);
+    T& At(size_t idx) const;
 
-    size_t Length();
+	int Find(T& data) const;
+
+	bool Contains(T& data) const;
+
+    size_t Length() const;
 };
 
 
@@ -52,14 +56,14 @@ public:
 
 template <typename T>
 template <typename... Args>
-void List<T>::CreateList(T& data, Args... args) {
+void List<T>::CreateList(T data, Args... args) {
 	Push_back(data);
 
 	CreateList(args...);
 }
 
 template <typename T>
-void List<T>::CreateList(T& data) {
+void List<T>::CreateList(T data) {
 	Push_back(data);
 }
 
@@ -74,7 +78,7 @@ List<T>::List() {
 }
 
 template <typename T>
-ListElem<T>* List<T>::FindByIdx(size_t idx) {
+ListElem<T>* List<T>::FindByIdx(size_t idx) const {
 	if (size == 0)
 		throw std::exception("List: the list was empty.");
 
@@ -200,11 +204,27 @@ T& List<T>::Pop_at(size_t idx) {
 }
 
 template <typename T>
-T& List<T>::At(size_t idx) {
+T& List<T>::At(size_t idx) const {
 	return FindByIdx(idx)->data;
 }
 
 template <typename T>
-size_t List<T>::Length() {
+int List<T>::Find(T& data) const {
+	for (size_t idx = 0; idx < size; ++idx)
+		if (data == At(idx))
+			return idx;
+	return -1;
+}
+
+template <typename T>
+bool List<T>::Contains(T& data) const {
+	for (size_t idx = 0; idx < size; ++idx)
+		if (data == At(idx))
+			return true;
+	return false;
+}
+
+template <typename T>
+size_t List<T>::Length() const {
 	return size;
 }
