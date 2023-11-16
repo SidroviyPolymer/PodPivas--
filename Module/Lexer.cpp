@@ -15,9 +15,15 @@ bool Lexer::Process(List<Token>* tlptr, List<std::string>* ilptr, std::string sr
 		return false;
 
 	Parse();
-	TokenList();
+	TokenList(result);
 
-	return true;
+	std::cout << "result = " << result;
+	if (result == true) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 bool Lexer::OpenFile(std::string src) {
@@ -184,7 +190,7 @@ void Lexer::Parse() {
 
 }
 
-void Lexer::TokenList() {
+void Lexer::TokenList(bool& result) {
 	for (size_t idx = 0; idx < flow->Length(); ++idx) {
 		std::string elem = flow->At(idx);
 		Pos elempos = flow2->At(idx);
@@ -201,12 +207,13 @@ void Lexer::TokenList() {
 			continue;
 		}
 		if (elem[0] >= '0' && elem[0] <= '9' || elem[0] == '-' || elem[0] == '$') {
-			Constant(elem, elempos);
+			Constant(elem, elempos,result);
 			continue;
 		}
 
 		else {
-			std::cout << "CHTO ETO ZA SLOVO Line : " << elempos.GetLine() << " Column : " << elempos.GetColumn() << std::endl;
+			std::cout << "WRONG WORD Line : " << elempos.GetLine() << " Column : " << elempos.GetColumn() << std::endl;
+			result = false;
 		}
 	}
 }
@@ -234,7 +241,7 @@ void Lexer::Operation(std::string word, Pos elempos) {
 	tokens->Push_back(*tmp);
 }
 
-void Lexer::Constant(std::string word, Pos elempos) {
+void Lexer::Constant(std::string word, Pos elempos,bool& result) {
 	int constant = 0;
 	if (word[0] != '$') {		
 		for (size_t idx = 0; idx < word.length(); ++idx) {
@@ -243,8 +250,10 @@ void Lexer::Constant(std::string word, Pos elempos) {
 
 			if (word[idx] >= '0' && word[idx] <= '9')
 				constant = constant * 10 + word[idx] - '0';
-			else
+			else {
 				std::cout << "ERROR CONSTANT Line:" << elempos.GetLine() << " Column: " << elempos.GetColumn() << std::endl;
+				result = false;
+			}
 		}			
 
 		if (word[0] == '-')
@@ -261,16 +270,20 @@ void Lexer::Constant(std::string word, Pos elempos) {
 
 			if (word[idx] >= '0' && word[idx] <= '9' || word[idx] >= 'a' && word[idx] <= 'f')
 				constant = constant * 16 + ((word[idx] >= '0' && word[idx] <= '9') ? word[idx] - '0' : word[idx] - 'a' + 10);
-			else
+			else {
 				std::cout << "ERROR CONSTANT Line:" << elempos.GetLine() << " Column: " << elempos.GetColumn() << std::endl;
+				result = false;
+			}
 		}
 
 		if (isNegative)
 			constant -= 32768;
 	}
 
-	if (constant < -32768 || constant > 32767)
+	if (constant < -32768 || constant > 32767) {
 		std::cout << "OUT OF BOUNDS Line:" << elempos.GetLine() << " Column: " << elempos.GetColumn() << std::endl;
+		result = false;
+	}
 	else {
 		Token* tmp = new Token(std::to_string(constant), Token::Type::Const, elempos.GetLine(), elempos.GetColumn());
 		tokens->Push_back(*tmp);

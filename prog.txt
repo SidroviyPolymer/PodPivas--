@@ -1,4 +1,4 @@
-a := b;{noob}b := 300000; ///aaaaaaaaa
-Демократия
+a := b;{noob}b := 300; ///aaaaaaaaa
+//Демократия
 begin
 end.

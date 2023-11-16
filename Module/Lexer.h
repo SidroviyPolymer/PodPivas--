@@ -71,12 +71,12 @@ private:
 
 	bool OpenFile(std::string src);
 	void Parse();
-	void TokenList();
+	void TokenList(bool& result);
 
 	void Id(std::string,Pos);
 	void Terminal(std::string, Pos);
 	void Operation(std::string, Pos);
-	void Constant(std::string, Pos);
+	void Constant(std::string, Pos,bool& result);
 public:
 	Lexer();
 
