@@ -1,20 +1,20 @@
 #include "Lexer.h"
 
 
-Lexer::Lexer() {
+Lexer::Lexer() { // конструктор класса ЛА, создаёт два списка
 	flow = new List<std::string>();
 	flow2 = new List<Pos>();
 }
 
-bool Lexer::Process(List<Token>* tlptr, List<std::string>* ilptr, std::string src) {
+bool Lexer::Process(List<Token>* tlptr, List<std::string>* ilptr, std::string src) { // Запуск ЛА, на входе два списка и файл с кодом
 	tokens = tlptr;
 	ids = ilptr;
-	bool result = true;
+	bool result = true; // Результат работы ЛА
 
-	if (!OpenFile(src))
+	if (!OpenFile(src)) // Не получилось открыть
 		return false;
 
-	Parse();
+	Parse(); // Вызов парсера
 	TokenList(result);
 
 	std::cout << "result = " << result;
@@ -34,25 +34,19 @@ bool Lexer::OpenFile(std::string src) {
 
 void Lexer::Parse() {
 	std::string word = "";
-	int debugiter = 0;
-	int line = 1;
-	int column = 0;
-	bool isCommented = false;
-	char prev;
-	bool isBegin = true;
-	std::string commentBegin;
+	int line = 1; // счётчик строк
+	int column = 0; // счётчик стобцов
+	bool isCommented = false; // Если идёт обработка комментария
+	char prev;  // хранилище предыдущего символа
+	bool isBegin = true;  // Если идёт обработка слова
+	std::string commentBegin; // хранилище конкретного типа комментария
 	while (!is.eof()) {
 		column++;
-		char tmp;
+		char tmp; // текущий символ
 		tmp = is.get();
 
-		//if (tmp != '\n')
-		//	std::cout << tmp;
-		//else
-		//	std::cout << "\\n";
-
-		if (isCommented && (tmp == '\n' || !isBegin && tmp == ')' && prev == '*' || tmp == '}')) {
-			if (commentBegin == "//") {
+		if (isCommented && (tmp == '\n' || !isBegin && tmp == ')' && prev == '*' || tmp == '}')) { // Если сейчас идёт комментарий
+			if (commentBegin == "//") { //Если коммент "//" то конец будет только на следующей строке
 				if (tmp == '\n') {
 					isCommented = false;
 					line++;
@@ -61,7 +55,7 @@ void Lexer::Parse() {
 					continue;
 				}
 			}
-			else if (commentBegin == "(*") {
+			else if (commentBegin == "(*") { //Если коммент "(*" то конец будет только после закрытия скобок "*)"
 				if (tmp == ')') {
 					isCommented = false;
 					prev = tmp;
@@ -69,7 +63,7 @@ void Lexer::Parse() {
 				}
 			}
 			else {
-				if (tmp == '}') {
+				if (tmp == '}') {            //Если коммент "{" то конец будет только после закрытия скобок "}"
 					isCommented = false;
 					prev = tmp;
 					continue;
@@ -82,18 +76,16 @@ void Lexer::Parse() {
 			continue;
 		}
 
-		if (!isBegin && (tmp == '/' && prev == '/' || tmp == '*' && prev == '(') || tmp == '{') {
+		if (!isBegin && (tmp == '/' && prev == '/' || tmp == '*' && prev == '(') || tmp == '{') { // Если у нас начало коммента, то isCommented = true;
 			isCommented = true;
 
 			if (tmp == '/' || tmp == '*')
 				word = word.substr(0, word.length() - 1);
 
 			if (word != "")
-				flow->Push_back(word);
-				//Pos* buf = new Pos(line, column - word.length());
-				//flow2->Push_back(*buf);
+				flow->Push_back(word);;
 
-			switch (tmp) {
+			switch (tmp) { // выбор варианта коммента на языке Pascal
 			case '/': commentBegin = "//"; break;
 			case '*': commentBegin = "(*"; break;
 			case '{': commentBegin = "{"; break;
@@ -103,7 +95,7 @@ void Lexer::Parse() {
 			continue;
 		}
 
-		if (tmp == ':' || tmp == ',' || tmp == ';' || tmp == '(' || tmp == ')') {
+		if (tmp == ':' || tmp == ',' || tmp == ';' || tmp == '(' || tmp == ')') { // Если встретили терминальный символ,а не коммент
 			if (word != "")
 				flow->Push_back(word);
 				Pos* buf = new Pos(line, column - word.length());
@@ -124,39 +116,35 @@ void Lexer::Parse() {
 			continue;
 		}
 
-		if (!isBegin && prev == '(') {
+		if (!isBegin && prev == '(') { // Если прошлый символ  '(' не часть коммента, то считаем его отдельным токеном
 			flow->Push_back(word);
 			Pos* buf2 = new Pos(line, column-1);
 			flow2->Push_back(*buf2);
 			word = "";
 		}
 
-		if (!isBegin && prev == ':') {
-			if (tmp == '=') {
+		if (!isBegin && prev == ':') { // Если прошлый символ  ':' не часть коммента
+			if (tmp == '=') { // Если нынешний символ  '=' и образует ":=" то это телый токен, помещаем его
 				word += '=';
 				flow->Push_back(word);
-				//Pos* buf2 = new Pos(line, column-1);
-				//flow2->Push_back(*buf2);
 				prev = tmp;
 				word = "";
 				continue;
 			}
-			else {
+			else { // Если нынешний символ не '=', то считаем его отдельным токеном
 				flow->Push_back(word);
-				//Pos* buf2 = new Pos(line, column-1);
-				//flow2->Push_back(*buf2);
-				word = "";
+				word = ""; 
 			}
 		}
 
-		if (tmp == '\n' || tmp == ' ' || tmp == '\t') {
-			if (word != "") {
+		if (tmp == '\n' || tmp == ' ' || tmp == '\t') { //Если слово закончилось, то помещаем в предварительный список токенов и позиций
+			if (word != "") { // Если не пустое
 				flow->Push_back(word);
 				Pos* buf = new Pos(line, column - word.length());
 				flow2->Push_back(*buf);
 				word = "";
 			}	
-			if (tmp == '\n') {
+			if (tmp == '\n') { // Если конец строки, то счётчик строк++, столбоцв обнуляется 
 				line++;
 				column = 0;
 			}
@@ -165,7 +153,7 @@ void Lexer::Parse() {
 			continue;
 		}
 
-		if (tmp >= 'A' && tmp <= 'Z')
+		if (tmp >= 'A' && tmp <= 'Z') // Приведение к нижнему регистру
 			tmp = std::tolower(tmp);
 
 		word += tmp;		
@@ -190,28 +178,28 @@ void Lexer::Parse() {
 
 }
 
-void Lexer::TokenList(bool& result) {
+void Lexer::TokenList(bool& result) { // Функция заполнение листов
 	for (size_t idx = 0; idx < flow->Length(); ++idx) {
 		std::string elem = flow->At(idx);
 		Pos elempos = flow2->At(idx);
-		if (terminals.Contains(elem)) {
+		if (terminals.Contains(elem)) { // Если есть совпадения с терминальными символами
 			Terminal(elem,elempos);
 			continue;
 		}			
-		if (elem[0] >= 'a' && elem[0] <= 'z' || elem[0] == '_') {
+		if (elem[0] >= 'a' && elem[0] <= 'z' || elem[0] == '_') { // Если начинается с символа от a до z или _
 			Id(elem,elempos);
 			continue;
 		}
-		if (operations.Contains(elem)) {
+		if (operations.Contains(elem)) { // Если есть совпадения с терминальными символами
 			Operation(elem, elempos);
 			continue;
 		}
-		if (elem[0] >= '0' && elem[0] <= '9' || elem[0] == '-' || elem[0] == '$') {
+		if (elem[0] >= '0' && elem[0] <= '9' || elem[0] == '-' || elem[0] == '$') { // Если начинается на цифру, знак
 			Constant(elem, elempos,result);
 			continue;
 		}
 
-		else {
+		else { // Если нет совпадений
 			std::cout << "WRONG WORD Line : " << elempos.GetLine() << " Column : " << elempos.GetColumn() << std::endl;
 			result = false;
 		}
@@ -250,7 +238,7 @@ void Lexer::Constant(std::string word, Pos elempos,bool& result) {
 
 			if (word[idx] >= '0' && word[idx] <= '9')
 				constant = constant * 10 + word[idx] - '0';
-			else {
+			else { // Если неправильно было введена константа
 				std::cout << "ERROR CONSTANT Line:" << elempos.GetLine() << " Column: " << elempos.GetColumn() << std::endl;
 				result = false;
 			}
@@ -270,7 +258,7 @@ void Lexer::Constant(std::string word, Pos elempos,bool& result) {
 
 			if (word[idx] >= '0' && word[idx] <= '9' || word[idx] >= 'a' && word[idx] <= 'f')
 				constant = constant * 16 + ((word[idx] >= '0' && word[idx] <= '9') ? word[idx] - '0' : word[idx] - 'a' + 10);
-			else {
+			else { // Если неправильно было введена константа
 				std::cout << "ERROR CONSTANT Line:" << elempos.GetLine() << " Column: " << elempos.GetColumn() << std::endl;
 				result = false;
 			}
@@ -280,7 +268,7 @@ void Lexer::Constant(std::string word, Pos elempos,bool& result) {
 			constant -= 32768;
 	}
 
-	if (constant < -32768 || constant > 32767) {
+	if (constant < -32768 || constant > 32767) { // Если превысели допустимое значение 2 байт 
 		std::cout << "OUT OF BOUNDS Line:" << elempos.GetLine() << " Column: " << elempos.GetColumn() << std::endl;
 		result = false;
 	}

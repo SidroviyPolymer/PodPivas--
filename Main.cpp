@@ -20,5 +20,8 @@ int main() {
 	for (size_t idx = 0; idx < tokens->Length(); ++idx) {
 		std::cout << tokens->At(idx) << std::endl;
 	}
+	for (size_t idx = 0; idx < ids->Length(); ++idx) {
+		std::cout << ids->At(idx) << std::endl;
+	}
 	return 0;
 }
