@@ -7,7 +7,6 @@ public:
 	ListElem* prev;
 	ListElem* next;
 
-
 	ListElem();
 	ListElem(T& data);
 	ListElem(T& data, ListElem* prev, ListElem* next);

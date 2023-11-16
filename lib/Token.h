@@ -14,10 +14,12 @@ public:
 private:
 	std::string content;
 	Type type; 
-
+	int Line;
+	int Column;
 public:
 	Token();
 	Token(std::string, Type);
+	Token(std::string, Type, int ,int);
 
 	Type GetType();
 

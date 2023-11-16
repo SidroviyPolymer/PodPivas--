@@ -1,12 +1,4 @@
-(*fwe few*)
-// fewfew
-var a : integer (*aaaaaaa*);
-//good
-{noob}
-procedure abc(a, b, c : integer);
-
+a := b;{noob}b := 300000; ///aaaaaaaaa
+Демократия
 begin
-a := b;{noob}b := 65536; ///aaaaaaaaa
 end.
-
-ya ebal arSeniya

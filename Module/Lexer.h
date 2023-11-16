@@ -5,12 +5,63 @@
 #include <algorithm>
 #include "../lib/List.hpp"
 #include "../lib/Token.h"
+#include "../lib/Error.h"
+#include "../lib/ID.hpp"
+
+class Pos {
+private:
+	int Line;
+	int Column;
+public:
+
+	Pos() {
+
+	}
+
+	Pos(int Line, int Column) {
+		this->Line = Line;
+		this->Column = Column;
+	}
+	int& GetLine() {
+		return Line;
+	}
+	int& GetColumn() {
+		return Column;
+	}
+
+	//friend std::ostream& operator<<(std::ostream&, const Pos&);
+
+	Pos& operator=(const Pos& pos) {
+
+		if (this == &pos) {
+			return *this;
+		}
+
+		Line = pos.Line;
+		Column = pos.Column;
+		return *this;
+	}
+
+	Pos(const Pos& p) {
+		Line = p.Line;
+		Column = p.Column;
+	}
+};
+
+
+/*std::ostream& operator<<(std::ostream& info, const Pos& data) {
+	info << "<" << data.Line << ", " << data.Column << ">";
+	return info;
+}*/
 
 class Lexer {
 private:
 	std::ifstream is;
 
+	typedef std::pair<int, int> posType;
+
 	List<std::string>* flow;
+	List<Pos>* flow2;
 
 	List<Token>* tokens;
 	List<std::string>* ids;
@@ -22,10 +73,10 @@ private:
 	void Parse();
 	void TokenList();
 
-	void Id(std::string);
-	void Terminal(std::string);
-	void Operation(std::string);
-	void Constant(std::string);
+	void Id(std::string,Pos);
+	void Terminal(std::string, Pos);
+	void Operation(std::string, Pos);
+	void Constant(std::string, Pos);
 public:
 	Lexer();
 

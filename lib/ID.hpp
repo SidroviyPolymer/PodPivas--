@@ -12,5 +12,8 @@ public:
 		this->id = id;
 		this->core = core;
 	};
+	ID(std::string core) {
+		this->core = core;
+	};
 	~ID() {};
 };
