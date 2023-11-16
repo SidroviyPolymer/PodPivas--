@@ -15,11 +15,12 @@ int main() {
 	List<std::string>* ids = new List<std::string>();
 	lx->Process(tokens, ids, "../" + fileSrc);
 
-	std::cout << std::endl << "<<------------------------->>" << std::endl << std::endl;
+	std::cout << std::endl << "<<------------Токены------------->>" << std::endl << std::endl;
 
 	for (size_t idx = 0; idx < tokens->Length(); ++idx) {
 		std::cout << tokens->At(idx) << std::endl;
 	}
+	std::cout << std::endl << "<<-----------Идентификаторы------->>" << std::endl << std::endl;
 	for (size_t idx = 0; idx < ids->Length(); ++idx) {
 		std::cout << ids->At(idx) << std::endl;
 	}

@@ -22,7 +22,7 @@ bool Lexer::Process(List<Token>* tlptr, List<std::string>* ilptr, std::string sr
 		return true;
 	}
 	else {
-		return false;
+		return result;
 	}
 }
 
@@ -38,7 +38,7 @@ void Lexer::Parse() {
 	int column = 0; // счётчик стобцов
 	bool isCommented = false; // Если идёт обработка комментария
 	char prev;  // хранилище предыдущего символа
-	bool isBegin = true;  // Если идёт обработка слова
+	bool isBegin = true;  // Указатель начала файла
 	std::string commentBegin; // хранилище конкретного типа комментария
 	while (!is.eof()) {
 		column++;
@@ -123,15 +123,15 @@ void Lexer::Parse() {
 			word = "";
 		}
 
-		if (!isBegin && prev == ':') { // Если прошлый символ  ':' не часть коммента
-			if (tmp == '=') { // Если нынешний символ  '=' и образует ":=" то это телый токен, помещаем его
+		if (!isBegin && prev == ':') {
+			if (tmp == '=') { // Если нынешний символ  '=' и образует ":=" то это целый токен, помещаем его
 				word += '=';
 				flow->Push_back(word);
 				prev = tmp;
 				word = "";
 				continue;
 			}
-			else { // Если нынешний символ не '=', то считаем его отдельным токеном
+			else { // Если нынешний символ не '=', то считаем ':' отдельным токеном
 				flow->Push_back(word);
 				word = ""; 
 			}
@@ -144,7 +144,7 @@ void Lexer::Parse() {
 				flow2->Push_back(*buf);
 				word = "";
 			}	
-			if (tmp == '\n') { // Если конец строки, то счётчик строк++, столбоцв обнуляется 
+			if (tmp == '\n') { // Если конец строки, то счётчик строк++, столбцов обнуляется 
 				line++;
 				column = 0;
 			}
@@ -158,7 +158,7 @@ void Lexer::Parse() {
 
 		word += tmp;		
 
-		if (word == "end.") {
+		if (word == "end.") { // Если end. , то прекраща
 			flow->Push_back(word);
 			Pos* buf = new Pos(line, column + 1 - word.length());
 			flow2->Push_back(*buf);
@@ -190,7 +190,7 @@ void Lexer::TokenList(bool& result) { // Функция заполнение л�
 			Id(elem,elempos);
 			continue;
 		}
-		if (operations.Contains(elem)) { // Если есть совпадения с терминальными символами
+		if (operations.Contains(elem)) { // Если есть совпадения с оператарами
 			Operation(elem, elempos);
 			continue;
 		}
@@ -199,7 +199,7 @@ void Lexer::TokenList(bool& result) { // Функция заполнение л�
 			continue;
 		}
 
-		else { // Если нет совпадений
+		else { // Если нет совпадений, то ошибка
 			std::cout << "WRONG WORD Line : " << elempos.GetLine() << " Column : " << elempos.GetColumn() << std::endl;
 			result = false;
 		}
@@ -208,7 +208,7 @@ void Lexer::TokenList(bool& result) { // Функция заполнение л�
 
 void Lexer::Id(std::string word, Pos elempos) {
 	size_t idx = 0;
-	if (!ids->Contains(word)) {
+	if (!ids->Contains(word)) { // Проверяем есть ли такой идентификатор уже в списке
 		ids->Push_back(word);
 		idx = ids->Length() - 1;
 	}

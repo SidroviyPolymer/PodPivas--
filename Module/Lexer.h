@@ -29,8 +29,6 @@ public:
 		return Column;
 	}
 
-	//friend std::ostream& operator<<(std::ostream&, const Pos&);
-
 	Pos& operator=(const Pos& pos) {
 
 		if (this == &pos) {
@@ -49,11 +47,6 @@ public:
 };
 
 
-/*std::ostream& operator<<(std::ostream& info, const Pos& data) {
-	info << "<" << data.Line << ", " << data.Column << ">";
-	return info;
-}*/
-
 class Lexer {
 private:
 	std::ifstream is;
@@ -66,8 +59,8 @@ private:
 	List<Token>* tokens;
 	List<std::string>* ids;
 
-	const List<std::string> terminals = List<std::string>("program", "const", "var", "procedure", "integer", "begin", "end", "end.", ",", ":", ";", "(", ")");
-	const List<std::string> operations = List<std::string>(":=", "+", "-", "*", "div", "mod");
+	const List<std::string> terminals = List<std::string>("program", "const", "var", "procedure", "integer", "begin", "end", "end.", ",", ":", ";", "(", ")"); // Терминальные символы
+	const List<std::string> operations = List<std::string>(":=", "+", "-", "*", "div", "mod"); // Операторы
 
 	bool OpenFile(std::string src);
 	void Parse();
