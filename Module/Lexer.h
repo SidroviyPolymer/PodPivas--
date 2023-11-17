@@ -59,7 +59,7 @@ private:
 	List<Token>* tokens;
 	List<std::string>* ids;
 
-	const List<std::string> terminals = List<std::string>("program", "const", "var", "procedure", "integer", "begin", "end", "end.", ",", ":", ";", "(", ")"); // Терминальные символы
+	const List<std::string> terminals = List<std::string>("program", "const", "var", "procedure", "integer", "begin", "end", "end.", ",", ":", ";", "(", ")","exit"); // Терминальные символы
 	const List<std::string> operations = List<std::string>(":=", "+", "-", "*", "div", "mod"); // Операторы
 
 	bool OpenFile(std::string src);

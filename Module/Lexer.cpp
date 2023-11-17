@@ -18,12 +18,8 @@ bool Lexer::Process(List<Token>* tlptr, List<std::string>* ilptr, std::string sr
 	TokenList(result);
 
 	std::cout << "result = " << result;
-	if (result == true) {
-		return true;
-	}
-	else {
-		return result;
-	}
+
+	return result;
 }
 
 bool Lexer::OpenFile(std::string src) {
