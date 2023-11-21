@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{b53c92cf-d3dc-4c2d-b48b-6106eb46ca52}</ProjectGuid>
-    <RootNamespace>gen</RootNamespace>
+    <ProjectGuid>{af03dcb8-ff3a-4a0f-bfc2-2e6ac33bed79}</ProjectGuid>
+    <RootNamespace>CodeGenerator</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -127,7 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="gen.cpp" />
+    <ClCompile Include="Code_Generator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
