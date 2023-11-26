@@ -1,16 +1,69 @@
-#include "List.h"
+#pragma once
+#include "ListElem.hpp"
+
+template <typename T>
+class List {
+private:
+    ListElem<T>* begin;
+    ListElem<T>* end;
+    size_t size;
+
+    template <typename... Args>
+    void CreateList(T data, Args... args);
+
+    void CreateList(T data);
+
+    void CreateList();
+
+    ListElem<T>* FindByIdx(size_t idx) const;
+public:
+
+    List();
+
+    template <typename... Args>
+    List(Args... args);
+
+    ~List();
+
+    void Push_front(T& data);
+
+    void Push_back(T& data);
+
+    void Push_at(size_t idx, T& data);
+
+    T& Pop_front();
+
+    T& Pop_back();
+
+    T& Pop_at(size_t idx);
+
+    T& At(size_t idx) const;
+
+	int Find(T& data) const;
+
+	bool Contains(T& data) const;
+
+    size_t Length() const;
+};
+
+
+
+
+
+
 #include <exception>
+#include <algorithm>
 
 template <typename T>
 template <typename... Args>
-void List<T>::CreateList(T& data, Args... args) {
+void List<T>::CreateList(T data, Args... args) {
 	Push_back(data);
 
 	CreateList(args...);
 }
 
 template <typename T>
-void List<T>::CreateList(T& data) {
+void List<T>::CreateList(T data) {
 	Push_back(data);
 }
 
@@ -25,7 +78,7 @@ List<T>::List() {
 }
 
 template <typename T>
-List<T>::Elem* List<T>::FindByIdx(size_t idx) {
+ListElem<T>* List<T>::FindByIdx(size_t idx) const {
 	if (size == 0)
 		throw std::exception("List: the list was empty.");
 
@@ -35,7 +88,7 @@ List<T>::Elem* List<T>::FindByIdx(size_t idx) {
 	bool forward = idx < (size - 1 - idx);
 	size_t counts = std::min(idx, size - 1 - idx);
 
-	Elem* start = forward ? begin : end;
+	ListElem<T>* start = forward ? begin : end;
 	for (size_t counter = 0; counter < counts; ++counter)
 		start = forward ? start->next : start->prev;
 
@@ -63,12 +116,12 @@ void List<T>::Push_front(T& data) {
 	++size;
 
 	if (begin == nullptr) {
-		begin = new Elem(data);
+		begin = new ListElem<T>(data);
 		end = begin;
 		return;
 	}
 
-	begin = new Elem(data, nullptr, begin);
+	begin = new ListElem<T>(data, nullptr, begin);
 }
 
 template <typename T>
@@ -76,12 +129,12 @@ void List<T>::Push_back(T& data) {
 	++size;
 
 	if (begin == nullptr) {
-		begin = new Elem(data);
+		begin = new ListElem<T>(data);
 		end = begin;
 		return;
 	}
 
-	end->next = new Elem(data, end, nullptr);
+	end->next = new ListElem<T>(data, end, nullptr);
 	end = end->next;
 }
 
@@ -97,8 +150,8 @@ void List<T>::Push_at(size_t idx, T& data) {
 		return;
 	}
 
-	Elem* tmp = FindByIdx(idx - 1);
-	tmp->next = new Elem(data, tmp, tmp->next);
+	ListElem<T>* tmp = FindByIdx(idx - 1);
+	tmp->next = new ListElem<T>(data, tmp, tmp->next);
 	++size;
 }
 
@@ -140,7 +193,7 @@ T& List<T>::Pop_at(size_t idx) {
 	if (idx == size)
 		return Pop_back();
 
-	Elem tmp_ptr = FindByIdx(idx);
+	ListElem<T>* tmp_ptr = FindByIdx(idx);
 	T tmp = tmp_ptr->data;
 	tmp_ptr->prev->next = tmp_ptr->next;
 	--size;
@@ -151,30 +204,27 @@ T& List<T>::Pop_at(size_t idx) {
 }
 
 template <typename T>
-T& List<T>::At(size_t idx) {
+T& List<T>::At(size_t idx) const {
 	return FindByIdx(idx)->data;
 }
 
-
-
-
 template <typename T>
-List<T>::Elem::Elem() {
-	data = NULL;
-	prev = nullptr;
-	next = nullptr;
+int List<T>::Find(T& data) const {
+	for (size_t idx = 0; idx < size; ++idx)
+		if (data == At(idx))
+			return idx;
+	return -1;
 }
 
 template <typename T>
-List<T>::Elem::Elem(T& data) {
-	this->data = data;
-	prev = nullptr;
-	next = nullptr;
+bool List<T>::Contains(T& data) const {
+	for (size_t idx = 0; idx < size; ++idx)
+		if (data == At(idx))
+			return true;
+	return false;
 }
 
 template <typename T>
-List<T>::Elem::Elem(T& data, Elem* prev, Elem* next) {
-	this->data = data;
-	this->prev = prev;
-	this->next = next;
+size_t List<T>::Length() const {
+	return size;
 }
