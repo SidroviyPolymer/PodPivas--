@@ -11,45 +11,28 @@
 class Pos {
 private:
 	int Line;
-	int Column;
+	int Column;	
 public:
 
-	Pos() {
+	Pos();
 
-	}
+	Pos(int Line, int Column);
 
-	Pos(int Line, int Column) {
-		this->Line = Line;
-		this->Column = Column;
-	}
-	int& GetLine() {
-		return Line;
-	}
-	int& GetColumn() {
-		return Column;
-	}
+	int& GetLine();
+	int& GetColumn();
 
-	Pos& operator=(const Pos& pos) {
+	Pos& operator=(const Pos& pos);
 
-		if (this == &pos) {
-			return *this;
-		}
+	Pos(const Pos& p);
 
-		Line = pos.Line;
-		Column = pos.Column;
-		return *this;
-	}
-
-	Pos(const Pos& p) {
-		Line = p.Line;
-		Column = p.Column;
-	}
+	friend std::ostream& operator<<(std::ostream&, Pos const&);
 };
 
 
 class Lexer {
 private:
 	std::ifstream is;
+	List<Error>* errlist;
 
 	typedef std::pair<int, int> posType;
 
@@ -73,5 +56,5 @@ private:
 public:
 	Lexer();
 
-	bool Process(List<Token>*, List<std::string>*, std::string src);
+	bool Process(List<Token>*, List<std::string>*, std::string src, List<Error>* errlist);
 };

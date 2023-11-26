@@ -1,5 +1,6 @@
 #pragma once
 #include "ListElem.hpp"
+#include <iostream>
 
 template <typename T>
 class List {
@@ -31,11 +32,11 @@ public:
 
     void Push_at(size_t idx, T& data);
 
-    T& Pop_front();
+    T Pop_front();
 
-    T& Pop_back();
+    T Pop_back();
 
-    T& Pop_at(size_t idx);
+    T Pop_at(size_t idx);
 
     T& At(size_t idx) const;
 
@@ -44,6 +45,10 @@ public:
 	bool Contains(T& data) const;
 
     size_t Length() const;
+	
+	void PrintAllLn(std::ostream& os) const;
+	
+	//void PrintAllLn(std::ofstream& os) const;
 };
 
 
@@ -72,6 +77,15 @@ void List<T>::CreateList() {}
 
 template <typename T>
 List<T>::List() {
+	ListElem<T>* ptr = begin;
+	while (ptr != end) {
+		ListElem<T>* tmp = ptr->next;
+		delete ptr;
+		ptr = tmp;
+	}		
+
+	delete ptr;
+
 	begin = nullptr;
 	end = nullptr;
 	size = 0;
@@ -156,37 +170,45 @@ void List<T>::Push_at(size_t idx, T& data) {
 }
 
 template <typename T>
-T& List<T>::Pop_front() {
+T List<T>::Pop_front() {
 	if (size == 0)
 		throw std::exception("List: the list was empty.");
 
 	--size;
 
 	T tmp = begin->data;
+	ListElem<T>* tmpptr = begin;
 
 	begin = begin->next;
-	delete begin->prev;
+	delete tmpptr;
 
 	return tmp;
 }
 
 template <typename T>
-T& List<T>::Pop_back() {
+T List<T>::Pop_back() {
 	if (size == 0)
 		throw std::exception("List: the list was empty.");
 
 	--size;
 
 	T tmp = end->data;
+	ListElem<T>* tmpptr = end;
+	
 	end = end->prev;
-
-	delete end->next;
+	delete tmpptr;
 
 	return tmp;
 }
 
 template <typename T>
-T& List<T>::Pop_at(size_t idx) {
+T List<T>::Pop_at(size_t idx) {
+	if (size == 0)
+		throw std::exception("List: the list was empty.");
+
+	if (idx >= size)
+		throw std::exception("List: out of range.");
+
 	if (idx == 0)
 		return Pop_front();
 
@@ -228,3 +250,25 @@ template <typename T>
 size_t List<T>::Length() const {
 	return size;
 }
+
+template <typename T>
+void List<T>::PrintAllLn(std::ostream& os) const {
+	ListElem<T>* ptr = begin;
+	while (ptr != end) {
+		os << ptr->data << std::endl;
+		ptr = ptr->next;
+	}		
+
+	os << ptr->data << std::endl;
+}
+
+//template <typename T>
+//void List<T>::PrintAllLn(std::ostream& os) const {
+//	ListElem<T>* ptr = begin;
+//	while (ptr != end) {
+//		os << ptr->data << std::endl;
+//		ptr = ptr->next;
+//	}
+//
+//	os << ptr->data << std::endl;
+//}

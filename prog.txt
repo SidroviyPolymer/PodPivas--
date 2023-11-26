@@ -3,7 +3,11 @@ procedure abc(a, b, c : integer);
 var a : integer (*aaaaaaa*);
 //good
 {noob}
+1ab;
 procedure abc(a, b, c : integer);
 begin
 a := b;{noob}b := 65536; ///aaaaaaaaa
+a := -32769;
+$1bHR;
+%admin^;
 end.
