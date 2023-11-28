@@ -42,7 +42,7 @@ Lexer::Lexer() { // конструктор класса ЛА, создаёт д�
 	flow2 = new List<Pos>();
 }
 
-bool Lexer::Process(List<Token>* tlptr, List<std::string>* ilptr, std::string src, List<Error>* errlist) { // Запуск ЛА, на входе два списка и файл с кодом
+bool Lexer::Process(List<Token>* tlptr, List<ID>* ilptr, std::string src, List<Error>* errlist) { // Запуск ЛА, на входе два списка и файл с кодом
 	tokens = tlptr;
 	ids = ilptr;
 	this->errlist = errlist;
@@ -256,12 +256,10 @@ void Lexer::TokenList(bool& result) { // Функция заполнение л�
 
 void Lexer::Id(std::string word, Pos elempos) {
 	size_t idx = 0;
-	if (!ids->Contains(word)) { // Проверяем есть ли такой идентификатор уже в списке
-		ids->Push_back(word);
-		idx = ids->Length() - 1;
+	ID tmp2 = ID(word, ID::Type::Not_defined, elempos.GetLine(), elempos.GetColumn());
+	if (!ids->Contains(tmp2)) {
+		ids->Push_back(tmp2);
 	}
-	else
-		idx = ids->Find(word);
 
 	Token* tmp = new Token("id" + std::to_string(idx), Token::Type::Id, elempos.GetLine(), elempos.GetColumn());
 	tokens->Push_back(*tmp);

@@ -40,7 +40,7 @@ private:
 	List<Pos>* flow2;
 
 	List<Token>* tokens;
-	List<std::string>* ids;
+	List<ID>* ids;
 
 	const List<std::string> terminals = List<std::string>("program", "const", "var", "procedure", "integer", "begin", "end", "end.", ",", ":", ";", "(", ")","exit"); // Терминальные символы
 	const List<std::string> operations = List<std::string>(":=", "+", "-", "*", "div", "mod"); // Операторы
@@ -56,5 +56,5 @@ private:
 public:
 	Lexer();
 
-	bool Process(List<Token>*, List<std::string>*, std::string src, List<Error>* errlist);
+	bool Process(List<Token>*, List<ID>*, std::string src, List<Error>* errlist);
 };

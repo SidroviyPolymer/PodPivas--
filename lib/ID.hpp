@@ -1,19 +1,30 @@
 #pragma once
+#include <iostream>
 #include <string>
-using namespace std;
 
 class ID {
-private:
-	int id;
-	string core;
 public:
-	ID() {};
-	ID(int id, string core) {
-		this->id = id;
-		this->core = core;
+	enum Type {
+		Var,
+		Const,
+		Proc,
+		Not_defined
 	};
-	ID(std::string core) {
-		this->core = core;
-	};
-	~ID() {};
+
+private:
+	std::string content;
+	Type type;
+	int Line;
+	int Column;
+public:
+	ID();
+	ID(std::string, Type);
+	ID(std::string, Type, int, int);
+
+	Type GetType();
+
+	std::string& GetContent();
+
+	friend std::ostream& operator<<(std::ostream&, const ID&);
+	bool operator==(ID const&);
 };

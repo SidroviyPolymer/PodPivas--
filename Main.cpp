@@ -19,27 +19,31 @@ int main() {
 		Lexer* lx = new Lexer();
 		std::string fileSrc = "prog.txt";
 		List<Token>* tokens = new List<Token>();
-		List<std::string>* ids = new List<std::string>();
+		List<ID>* ids = new List<ID>();
 		bool lxGood = lx->Process(tokens, ids, "../" + fileSrc, errlist);
 		if (!lxGood) {
-			std::ofstream erros, tokos;
+			std::ofstream erros, tokos, idos;
 			erros.open("errors.log");
 			tokos.open("tokens.log");
+			idos.open("idos.log");
 
 			errlist->PrintAllLn(erros);
 			tokens->PrintAllLn(tokos);
+			ids->PrintAllLn(idos);
+
 			delete errlist;
 			delete lx;
 			delete tokens;
 			delete ids;
 			return 0;
 		}
-
+		/*
 		Syntax* sx = new Syntax();
 		bool sxGood = sx->Process(tokens, ids, errlist);
 		if (!sxGood) {
 
 		}
+		*/
 	}
 	catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
