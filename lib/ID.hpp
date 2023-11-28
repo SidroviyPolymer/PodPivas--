@@ -16,6 +16,7 @@ private:
 	Type type;
 	int Line;
 	int Column;
+	int Area;
 public:
 	ID();
 	ID(std::string, Type);

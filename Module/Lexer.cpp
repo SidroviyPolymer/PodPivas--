@@ -328,3 +328,12 @@ void Lexer::Constant(std::string word, Pos elempos,bool& result) {
 		tokens->Push_back(*tmp);
 	}		
 }
+
+void Lexer::IDList(Pos elempos, List<Token>* tlptr) {
+	bool Procedure;
+	int start = 0, stop = 0;
+	int NumberArea;
+	for (int i = 0; i < tlptr->Length(); i++) {
+
+	}
+}
