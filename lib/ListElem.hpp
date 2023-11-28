@@ -1,5 +1,7 @@
 #pragma 
 
+#include <type_traits>
+
 template <typename T>
 class ListElem {
 public:
@@ -10,6 +12,8 @@ public:
 	ListElem();
 	ListElem(T& data);
 	ListElem(T& data, ListElem* prev, ListElem* next);
+
+	~ListElem();
 };
 
 
@@ -34,3 +38,6 @@ ListElem<T>::ListElem(T& data, ListElem* prev, ListElem* next) {
 	this->prev = prev;
 	this->next = next;
 }
+
+template <typename T>
+ListElem<T>::~ListElem() {}

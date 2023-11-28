@@ -11,45 +11,28 @@
 class Pos {
 private:
 	int Line;
-	int Column;
+	int Column;	
 public:
 
-	Pos() {
+	Pos();
 
-	}
+	Pos(int Line, int Column);
 
-	Pos(int Line, int Column) {
-		this->Line = Line;
-		this->Column = Column;
-	}
-	int& GetLine() {
-		return Line;
-	}
-	int& GetColumn() {
-		return Column;
-	}
+	int& GetLine();
+	int& GetColumn();
 
-	Pos& operator=(const Pos& pos) {
+	Pos& operator=(const Pos& pos);
 
-		if (this == &pos) {
-			return *this;
-		}
+	Pos(const Pos& p);
 
-		Line = pos.Line;
-		Column = pos.Column;
-		return *this;
-	}
-
-	Pos(const Pos& p) {
-		Line = p.Line;
-		Column = p.Column;
-	}
+	friend std::ostream& operator<<(std::ostream&, Pos const&);
 };
 
 
 class Lexer {
 private:
 	std::ifstream is;
+	List<Error>* errlist;
 
 	typedef std::pair<int, int> posType;
 
@@ -57,14 +40,16 @@ private:
 	List<Pos>* flow2;
 
 	List<Token>* tokens;
-	List<std::string>* ids;
+	List<ID>* ids;
 
 	const List<std::string> terminals = List<std::string>("program", "const", "var", "procedure", "integer", "begin", "end", "end.", ",", ":", ";", "(", ")","exit"); // Терминальные символы
+	const List<std::string> TerminalsForID = List<std::string>("const", "var", "procedure", "begin", "end", "end.");
 	const List<std::string> operations = List<std::string>(":=", "+", "-", "*", "div", "mod"); // Операторы
 
 	bool OpenFile(std::string src);
 	void Parse();
 	void TokenList(bool& result);
+	void IDList(Pos, List<Token>*);
 
 	void Id(std::string,Pos);
 	void Terminal(std::string, Pos);
@@ -73,5 +58,5 @@ private:
 public:
 	Lexer();
 
-	bool Process(List<Token>*, List<std::string>*, std::string src);
+	bool Process(List<Token>*, List<ID>*, std::string src, List<Error>* errlist);
 };

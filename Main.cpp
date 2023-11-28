@@ -1,28 +1,53 @@
 #include <iostream>
+#include <fstream>
+#include <locale>
+#include <exception>
 #include "lib/Token.h"
 #include "lib/List.hpp"
 #include "lib/Tree.hpp"
+#include "lib/Error.h"
 #include "Module/ErrorProcessor.h"
 #include "Module/Generator.h"
 #include "Module/Lexer.h"
 #include "Module/Syntax.h"
 #include "lib/ID.hpp"
 
-int main() {
-	Lexer* lx = new Lexer();
-	std::string fileSrc = "prog.txt";
-	List<Token>* tokens = new List<Token>();
-	List<std::string>* ids = new List<std::string>();
-	lx->Process(tokens, ids, "../" + fileSrc);
+int main() {	
+	try {
+		List<Error>* errlist = new List<Error>();
 
-	std::cout << std::endl << "<<------------Токены------------->>" << std::endl << std::endl;
+		Lexer* lx = new Lexer();
+		std::string fileSrc = "prog.txt";
+		List<Token>* tokens = new List<Token>();
+		List<ID>* ids = new List<ID>();
+		bool lxGood = lx->Process(tokens, ids, "../" + fileSrc, errlist);
+		if (!lxGood) {
+			std::ofstream erros, tokos, idos;
+			erros.open("errors.log");
+			tokos.open("tokens.log");
+			idos.open("idos.log");
 
-	for (size_t idx = 0; idx < tokens->Length(); ++idx) {
-		std::cout << tokens->At(idx) << std::endl;
+			errlist->PrintAllLn(erros);
+			tokens->PrintAllLn(tokos);
+			ids->PrintAllLn(idos);
+
+			delete errlist;
+			delete lx;
+			delete tokens;
+			delete ids;
+			return 0;
+		}
+		/*
+		Syntax* sx = new Syntax();
+		bool sxGood = sx->Process(tokens, ids, errlist);
+		if (!sxGood) {
+
+		}
+		*/
 	}
-	std::cout << std::endl << "<<-----------Идентификаторы------->>" << std::endl << std::endl;
-	for (size_t idx = 0; idx < ids->Length(); ++idx) {
-		std::cout << ids->At(idx) << std::endl;
+	catch (std::exception& e) {
+		std::cout << e.what() << std::endl;
 	}
+	
 	return 0;
 }

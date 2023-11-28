@@ -19,6 +19,6 @@ Token::Type Token::GetType() { return type; }
 std::string& Token::GetContent() { return content; }
 
 std::ostream& operator<<(std::ostream& os, const Token& data) {
-	os << "<" << data.content << ", " << data.type << " Строка/столбец: " << data.Line << ", " << data.Column << ">>";
+	os << "<" << data.content << ", " << data.type << ", Position: " << data.Line << ", " << data.Column << ">";
 	return os;
 }
