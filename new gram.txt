@@ -1,37 +1,40 @@
 <program>::=PROGRAM <name>(<file_name>{,<file_name>});<block>.
+
 <file_name>::=<name>
-                                                                                            <name>::=<letter>[{<letter>|<digit>}]
 <block>::=<constants_section><variables_section><procedures_section><operators_section> 
+
 <constants_section>::=<null>|CONST <definition_constant>;{<definition_constant>;}
 <definition_constant>::=<name>=<constant>
-<constant>::=<unsigned_number>|<sign><unsigned_number>|<constant_name>|<sign><constant_name>
-<unsigned_number>::=<unsigned_integer>
-                                                                                            <unsigned_integer>=<digit>[{<digit>}]
-<sign>::=+|-
+<constant>::=<integer>|<constant_name>|<sign><constant_name>                                                                                            
 <constant_name>::=<name>
+<sign>::=+|-
+
 <variables_section>::= VAR <description_similar_var>;[{<description_similar_var>;}]|<null>
 <description_similar_var>::=<name>[{,<name>}]:INTEGER
+
 <procedures_section>::=[{<description_procedure>;}]
 <description_procedure>::=<title_procedure>|<block>
 <title_procedure>::= PROCEDURE <procedure_name>;| PROCEDURE <procedure_name>(<formal_var_section>[{;<formal_var_section>}]);
 <formal_var_section>::=<group_var>|VAR <group_var>| PROCEDURE <procedure_name>[{,<procedure_name>}]
 <group_var>::=<name>[{,<name>}]:INTEGER
+
 <operators_section>::=<соmpound_operator>
 <соmpound_operator>::= BEGIN <operator>[{;<operator>}] END
 <operator>::=<simple_operator>|<complex_operator>
 <simple_operator>::=<assignment_operator>|<procedure_operator>|<exit_operator>|<null_operator>
+
 <assignment_operator>::=<variable>:=<expression>
 <variable>::=<variable_name>
 <variable_name>::=<name>
-<expression>::=<sign><term>[{<additive_operation><term>}]
-<additive_operation>::=+|-
-<term>::=<factor>[{<multiplicative_operation><factor>}]
-<multiplicative_operation>::=*|/
-<factor>::=<variable>|<signed_constant>|(<expression>)
-<signed_constant>::=<constant>|NIL
+<expression>::=<term> + <expression> | <term>
+<term>::=<factor> * <expression> | <factor>
+<factor>::=<variable>|<constant>|(<expression>)
+
 <procedure_operator>::=<procedure_name>|<procedure_name>(<actual_operator>[{,<actual_operator>}])
 <procedure_name>::=<name>
 <actual_operator>=<expression>|<variable>|<procedure_name>
+
 <null_operator>=NULL
+
 <complex_operator>::=<соmpound_operator>
 <exit_operator>::=EXIT
