@@ -27,6 +27,8 @@ void Syntax::Program() {
 		tokens->Push_front(semicolon);
 		tokens->Push_front(name);
 	}
+	else
+		tokens->Pop_front();
 
 	//<name>
 	Token name = tokens->At(0);
@@ -98,7 +100,7 @@ bool Syntax::ConstantSection(Tree* tree, std::string area) {
 	}
 	tokens->Pop_front();
 
-	tree->GetData() = "const";	
+	tree->SetData("const");	
 	tree = tree->CreateLeft();
 
 	if (!DefinitionConstant(tree, area)) {
@@ -109,8 +111,10 @@ bool Syntax::ConstantSection(Tree* tree, std::string area) {
 	tree = tree->CreateRight();
 
 	while (DefinitionConstant(tree, area)) {
-
+		tree = tree->CreateRight();
 	}
+
+	delete tree;
 }
 
 bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
@@ -121,7 +125,8 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 		return false;
 	}
 	tokens->Pop_front();
-	tree->CreateLeft();
+	tree->SetData(name.GetContent());
+	tree = tree->CreateLeft();
 
 	//=
 	Token equal = tokens->At(0);
@@ -137,6 +142,7 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 		//ÎØÈÁÊÀ
 		return false;
 	}
+	tree->SetData(constant.GetContent());
 	tokens->Pop_front();
 
 	//;
@@ -151,5 +157,22 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 }
 
 bool Syntax::Constant(Token constant) {
-
+	//<integer>
+	if (constant.GetType() == Token::Type::Const) {
+		return true;
+	}
+	//<constant_name>
+	else if (constant.GetType() == Token::Type::Id) {
+		size_t idx = std::stoi(constant.GetContent().substr(2));
+		ID& id = ids->At(idx);
+		return id.GetType() == ID::Type::Const;
+	}
+	//<sign><constant_name>
+	else if (constant.GetContent() == "-" || constant.GetContent() == "+") {
+		return true;
+	}
+	else {
+		//Îøèáêà
+		return false;
+	}
 }

@@ -20,6 +20,7 @@ public:
 	Tree* GetRight();
 
 	std::string& GetData();
+	void SetData(std::string);
 
 	Tree* CreateLeft();
 	Tree* CreateLeft(std::string& data);
@@ -65,6 +66,10 @@ Tree* Tree::GetRight() {
 
 std::string& Tree::GetData() {
 	return data;
+}
+
+void Tree::SetData(std::string data) {
+	this->data = data;
 }
 
 Tree* Tree::CreateLeft() {

@@ -10,7 +10,7 @@
 #include "Module/Generator.h"
 #include "Module/Lexer.h"
 #include "Module/Syntax.h"
-#include "lib/ID.hpp"
+#include "lib/ID.h"
 
 int main() {	
 	try {
