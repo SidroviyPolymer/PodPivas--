@@ -44,7 +44,7 @@ private:
 
 	const List<std::string> terminals = List<std::string>("program", "const", "var", "procedure", "integer", "begin", "end", "end.", ",", ":", ";", "(", ")","exit"); // Терминальные символы
 	const List<std::string> TerminalsForID = List<std::string>("const", "var", "procedure", "begin", "end", "end.");
-	const List<std::string> operations = List<std::string>(":=", "+", "-", "*", "div", "mod"); // Операторы
+	const List<std::string> operations = List<std::string>(":=", "+", "-", "*", "div", "mod", "="); // Операторы
 
 	bool OpenFile(std::string src);
 	void Parse();

@@ -17,7 +17,9 @@ public:
 	Tree(std::string& data);
 	~Tree();
 
+	void SetLeft(Tree*);
 	Tree* GetLeft();
+	void SetRight(Tree*);
 	Tree* GetRight();
 
 	std::string& GetData();

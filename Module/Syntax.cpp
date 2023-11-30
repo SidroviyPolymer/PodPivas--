@@ -138,14 +138,12 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 	}
 	tokens->Pop_front();
 
-	//<constant>
-	Token constant = tokens->At(0);
-	if (!Constant(constant)) {
+	//<constant_expression>	
+	size_t idx = 0;
+	if (!ConstantExpression(tree, idx)) {
 		//ÎØÈÁÊÀ
 		return false;
 	}
-	tree->SetData(constant.GetContent());
-	tokens->Pop_front();
 
 	//;
 	Token semicolon = tokens->At(0);
@@ -156,6 +154,66 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 	tokens->Pop_front();
 
 	return true;
+}
+
+bool Syntax::ConstantExpression(Tree* tree, size_t& idx) {
+	//<consant_term>
+	if (!ConstantTerm(tree, idx)) {
+		//Îøèáêà
+		return false;
+	}
+
+	//+
+	Token lp_operator = tokens->At(idx++);
+	if (lp_operator.GetContent() != "+" || lp_operator.GetContent() != "-") {
+
+		return true;
+	}		
+
+	//<constant_expression>
+	if (!ConstantExpression(tree, idx)) {
+		//ÎØÈÁÊÀ
+		return false;
+	}
+}
+
+bool Syntax::ConstantTerm(Tree* tree, size_t& idx) {
+	//<constant_factor>
+	if (!ConstantFactor(tree, idx)) {
+		//Îøèáêà
+		return false;
+	}
+
+	//[* <constant_term>]
+	Token mult = tokens->At(0);
+	if (mult.GetContent() != "*")
+		return true;
+
+	//<constant_term>
+	if (!ConstantTerm(tree, idx)) {
+		//Îøèáêà
+		return false;
+	}
+}
+
+bool Syntax::ConstantFactor(Tree* tree, size_t& idx) {
+	//<constant>
+	Token constant = tokens->At(0);
+	if (Constant(constant)) {
+		tree->SetData(constant.GetContent());
+		return true;
+	}
+
+	//(
+	Token open = tokens->At(0);
+	if (open.GetContent() != "(") {
+		//Îøèáêà
+		return false;
+	}
+
+	//<constant_expression>
+	
+	//)
 }
 
 bool Syntax::Constant(Token constant) {
@@ -171,6 +229,7 @@ bool Syntax::Constant(Token constant) {
 	}
 	//<sign><constant_name>
 	else if (constant.GetContent() == "-" || constant.GetContent() == "+") {
+
 		return true;
 	}
 	else {

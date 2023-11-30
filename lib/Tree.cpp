@@ -19,10 +19,24 @@ Tree::~Tree() {
 		delete right;
 }
 
+void Tree::SetLeft(Tree* tree) {
+	if (left != nullptr)
+		delete left;
+
+	left = tree;
+}
+
 Tree* Tree::GetLeft() {
 	if (left == nullptr)
 		throw std::exception("Tree: left subtree doesn't exists");
 	return left;
+}
+
+void Tree::SetRight(Tree* tree) {
+	if (right != nullptr)
+		delete right;
+
+	right = tree;
 }
 
 Tree* Tree::GetRight() {

@@ -16,6 +16,9 @@ private:
 
 	bool ConstantSection(Tree*, std::string);
 	bool DefinitionConstant(Tree*, std::string);
+	bool ConstantExpression(Tree*, size_t&);
+	bool ConstantTerm(Tree*, size_t&);
+	bool ConstantFactor(Tree*, size_t&);
 	bool Constant(Token);
 
 	Tree* syntaxTree;

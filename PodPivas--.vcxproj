@@ -132,6 +132,7 @@
     <ClCompile Include="lib\Error.cpp" />
     <ClCompile Include="lib\ID.cpp" />
     <ClCompile Include="lib\Token.cpp" />
+    <ClCompile Include="lib\Tree.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Module\ErrorProcessor.cpp" />
     <ClCompile Include="Module\Generator.cpp" />
@@ -141,10 +142,10 @@
   <ItemGroup>
     <ClInclude Include="lib\Elem.hpp" />
     <ClInclude Include="lib\Error.h" />
-    <ClInclude Include="lib\ID.hpp" />
+    <ClInclude Include="lib\ID.h" />
     <ClInclude Include="lib\List.hpp" />
     <ClInclude Include="lib\Token.h" />
-    <ClInclude Include="lib\Tree.hpp" />
+    <ClInclude Include="lib\Tree.h" />
     <ClInclude Include="Module\ErrorProcessor.h" />
     <ClInclude Include="Module\Generator.h" />
     <ClInclude Include="Module\Lexer.h" />

@@ -39,6 +39,9 @@
     <ClCompile Include="lib\ID.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="lib\Tree.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\Error.h">
@@ -65,11 +68,11 @@
     <ClInclude Include="lib\List.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="lib\Tree.hpp">
+    <ClInclude Include="lib\ID.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="lib\ID.hpp">
-      <Filter>Исходные файлы</Filter>
+    <ClInclude Include="lib\Tree.h">
+      <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

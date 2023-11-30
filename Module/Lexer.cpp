@@ -136,7 +136,7 @@ void Lexer::Parse() {
 			continue;
 		}
 
-		if (tmp == ':' || tmp == ',' || tmp == ';' || tmp == '(' || tmp == ')') { // Если встретили терминальный символ,а не коммент
+		if (tmp == ':' || tmp == ',' || tmp == ';' || tmp == '(' || tmp == ')' || tmp == '+' || tmp == '-' || tmp == '*') { // Если встретили терминальный символ,а не коммент
 			if (word != "") {
 				flow->Push_back(word);
 				Pos* buf = new Pos(line, column - word.length());
@@ -148,8 +148,6 @@ void Lexer::Parse() {
 				flow->Push_back(word);
 				Pos* buf2 = new Pos(line, column);
 				flow2->Push_back(*buf2);
-				//if (prev != ')') {
-				//}
 				word = "";
 			}	
 
@@ -226,38 +224,70 @@ void Lexer::Parse() {
 
 void Lexer::TokenList(bool& result) { // Функция заполнение листов
 	//std::cout << flow->Length() << " " << flow2->Length() << std::endl;
-	for (size_t idx = 0; idx < flow->Length(); ++idx) {
-		std::string elem = flow->At(idx);
-		Pos elempos = flow2->At(idx);
+	std::string prev = "";
+	Pos prevpos;
+	bool isNegative = false;
+	for (; flow->Length() > 0;) {
+		std::string elem = flow->Pop_front();
+		Pos elempos = flow2->Pop_front();
 		if (terminals.Contains(elem)) { // Если есть совпадения с терминальными символами
 			Terminal(elem,elempos);
+			prev = elem;
 			continue;
 		}			
 		if (elem[0] >= 'a' && elem[0] <= 'z' || elem[0] == '_') { // Если начинается с символа от a до z или _
+			if (isNegative) {
+				Operation(prev, prevpos);
+				isNegative = false;
+			}				
 			Id(elem,elempos);
+			prev = elem;
+			prevpos = elempos;
 			continue;
+		}
+		if (elem[0] == '-') {
+			if (prev != "" && ((prev[0] >= 'a' && prev[0] <= 'z' || prev[0] == '_') || (prev[0] >= '0' && prev[0] <= '9' || prev[0] == '$'))) {
+				Operation(elem, elempos);
+				prev = elem;
+				prevpos = elempos;
+				continue;
+			}
+			else {
+				isNegative = true;
+				prev = elem;
+				prevpos = elempos;
+				continue;
+			}
 		}
 		if (operations.Contains(elem)) { // Если есть совпадения с оператарами
 			Operation(elem, elempos);
+			prev = elem;
+			prevpos = elempos;
 			continue;
 		}
-		if (elem[0] >= '0' && elem[0] <= '9' || elem[0] == '-' || elem[0] == '$') { // Если начинается на цифру, знак
-			Constant(elem, elempos,result);
+		if (elem[0] >= '0' && elem[0] <= '9' || elem[0] == '$') { // Если начинается на цифру, знак
+			if (isNegative) {
+				elem = elem.insert(0, "-");
+				isNegative = false;
+			}				
+			Constant(elem, elempos, result);
+			prev = elem;
+			prevpos = elempos;
 			continue;
 		}
 
-		else { // Если нет совпадений, то ошибка
-			Error err("L0001", "Undefined identificator", elempos.GetLine(), elempos.GetColumn());
-			errlist->Push_back(err);				
-			result = false;
-		}
+		// Если нет совпадений, то ошибка
+		Error err("L0001", "Undefined identificator", elempos.GetLine(), elempos.GetColumn());
+		errlist->Push_back(err);				
+		result = false;
 	}
 }
 
-void Lexer::Id(std::string word, Pos elempos) {
-	size_t idx = 0;
+void Lexer::Id(std::string word, Pos elempos) {	
 	ID tmp2 = ID(word, ID::Type::Not_defined, elempos.GetLine(), elempos.GetColumn());
-	if (!ids->Contains(tmp2)) {
+	int idx = ids->Find(tmp2);
+	if (idx < 0) {
+		idx = ids->Length();
 		ids->Push_back(tmp2);
 	}
 

@@ -33,6 +33,6 @@ bool ID::operator==(ID const& id) {
 }
 
 std::ostream& operator<<(std::ostream& os, const ID& data) {
-	os << "<" << data.content << ", " << data.type << ", Position: " << data.line << ", " << data.column << ">";
+	os << "<" << data.content << ", " << data.type << ", Position: " << data.line << ", " << data.column << ", Area: " << data.area << ">";
 	return os;
 }

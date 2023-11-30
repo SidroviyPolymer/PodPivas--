@@ -53,13 +53,16 @@ int main() {
 		idos.close();
 
 
-		/*
-		Syntax* sx = new Syntax();
-		bool sxGood = sx->Process(tokens, ids, errlist);
+		
+		Syntax* sx = new Syntax(tokens, ids, errlist);
+		bool sxGood = sx->Process();
 		if (!sxGood) {
 
 		}
-		*/
+
+		idos.open("s_idos.log");
+		ids->PrintAllLn(idos);
+		idos.close();		
 	}
 	catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
