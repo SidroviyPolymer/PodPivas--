@@ -4,7 +4,7 @@
 #include <exception>
 #include "lib/Token.h"
 #include "lib/List.hpp"
-#include "lib/Tree.hpp"
+#include "lib/Tree.h"
 #include "lib/Error.h"
 #include "Module/ErrorProcessor.h"
 #include "Module/Generator.h"
@@ -31,12 +31,28 @@ int main() {
 			tokens->PrintAllLn(tokos);
 			ids->PrintAllLn(idos);
 
+			erros.close();
+			tokos.close();
+			idos.close();
+
 			delete errlist;
 			delete lx;
 			delete tokens;
 			delete ids;
 			return 0;
 		}
+
+		std::ofstream tokos, idos;
+		tokos.open("tokens.log");
+		idos.open("idos.log");
+
+		tokens->PrintAllLn(tokos);
+		ids->PrintAllLn(idos);
+
+		tokos.close();
+		idos.close();
+
+
 		/*
 		Syntax* sx = new Syntax();
 		bool sxGood = sx->Process(tokens, ids, errlist);

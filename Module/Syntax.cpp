@@ -89,6 +89,8 @@ bool Syntax::Block(Tree* tree, std::string area) {
 	//<constant_section>
 	if (ConstantSection(definitions, area))
 		definitions = definitions->CreateRight();
+
+	return true;
 }
 
 bool Syntax::ConstantSection(Tree* tree, std::string area) {

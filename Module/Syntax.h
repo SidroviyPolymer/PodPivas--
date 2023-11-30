@@ -2,9 +2,9 @@
 
 #include "../lib/List.hpp"
 #include "../lib/Token.h"
-#include "../lib/Tree.hpp"
+#include "../lib/Tree.h"
 #include "../lib/Error.h"
-#include "../lib/ID.h";
+#include "../lib/ID.h"
 
 class Syntax {
 private:
