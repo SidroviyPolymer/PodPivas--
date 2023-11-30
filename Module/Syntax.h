@@ -4,7 +4,7 @@
 #include "../lib/Token.h"
 #include "../lib/Tree.hpp"
 #include "../lib/Error.h"
-#include "../lib/ID.hpp";
+#include "../lib/ID.h";
 
 class Syntax {
 private:
