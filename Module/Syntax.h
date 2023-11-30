@@ -4,12 +4,16 @@
 #include "../lib/Token.h"
 #include "../lib/Tree.hpp"
 #include "../lib/Error.h"
+#include "../lib/ID.hpp";
 
 class Syntax {
 private:
 
-public:
-	Syntax();
 
-	bool Process(List<Token>* tokens, List<std::string>* ids, List<Error>* errlist);
+	List<Token>* tokens;
+	List<std::string>* ids;
+public:
+	Syntax(List<Token>* tokens, List<std::string>* ids, List<Error>* errlist);
+
+	bool Process();
 };

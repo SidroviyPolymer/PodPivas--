@@ -6,7 +6,7 @@
 #include "../lib/List.hpp"
 #include "../lib/Token.h"
 #include "../lib/Error.h"
-#include "../lib/ID.hpp"
+#include "../lib/ID.h"
 
 class Pos {
 private:

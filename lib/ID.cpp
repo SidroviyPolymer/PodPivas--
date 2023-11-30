@@ -1,4 +1,4 @@
-#include "ID.hpp"
+#include "ID.h"
 
 ID::ID() {}
 
@@ -10,8 +10,8 @@ ID::ID(std::string content, Type type) {
 ID::ID(std::string content, Type type, int Line, int Column) {
 	this->content = content;
 	this->type = type;
-	this->Line = Line;
-	this->Column = Column;
+	this->line = Line;
+	this->column = Column;
 }
 
 ID::Type ID::GetType() { return type; }
@@ -23,6 +23,6 @@ bool ID::operator==(ID const& id) {
 }
 
 std::ostream& operator<<(std::ostream& os, const ID& data) {
-	os << "<" << data.content << ", " << data.type << ", Position: " << data.Line << ", " << data.Column << ">";
+	os << "<" << data.content << ", " << data.type << ", Position: " << data.line << ", " << data.column << ">";
 	return os;
 }

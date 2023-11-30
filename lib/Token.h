@@ -14,8 +14,8 @@ public:
 private:
 	std::string content;
 	Type type; 
-	int Line;
-	int Column;
+	int line;
+	int column;	
 public:
 	Token();
 	Token(std::string, Type);

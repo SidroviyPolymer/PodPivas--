@@ -10,8 +10,8 @@ Token::Token(std::string content, Type type) {
 Token::Token(std::string content, Type type, int Line, int Column) {
 	this->content = content;
 	this->type = type;
-	this->Line = Line;
-	this->Column = Column;
+	this->line = Line;
+	this->column = Column;
 }
 
 Token::Type Token::GetType() { return type; }
@@ -19,6 +19,6 @@ Token::Type Token::GetType() { return type; }
 std::string& Token::GetContent() { return content; }
 
 std::ostream& operator<<(std::ostream& os, const Token& data) {
-	os << "<" << data.content << ", " << data.type << ", Position: " << data.Line << ", " << data.Column << ">";
+	os << "<" << data.content << ", " << data.type << ", Position: " << data.line << ", " << data.column << ">";
 	return os;
 }
