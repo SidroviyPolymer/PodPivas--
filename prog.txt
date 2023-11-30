@@ -1,13 +1,13 @@
-procedure
-procedure abc(a, b, c : integer);
-var a : integer (*aaaaaaa*);
-//good
-{noob}
-1ab;
-procedure abc(a, b, c : integer);
+program PROG;
+
+const
+	a = 5;
+	b = -a;
+	c = -10;
+
+var
+	_a, _b : integer;
+	_c : integer;
+
 begin
-a := b;{noob}b := 65536; ///aaaaaaaaa
-a := -32769;
-$1bHR;
-%admin^;
 end.

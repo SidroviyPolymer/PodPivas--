@@ -18,6 +18,8 @@ Token::Type Token::GetType() { return type; }
 
 std::string& Token::GetContent() { return content; }
 
+std::pair<int, int> Token::GetPos() { return std::pair<int, int>(line, column); }
+
 std::ostream& operator<<(std::ostream& os, const Token& data) {
 	os << "<" << data.content << ", " << data.type << ", Position: " << data.line << ", " << data.column << ">";
 	return os;

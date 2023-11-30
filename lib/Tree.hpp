@@ -21,10 +21,10 @@ public:
 
 	std::string& GetData();
 
-	void CreateLeft();
-	void CreateLeft(std::string& data);
-	void CreateRight();
-	void CreateRight(std::string& data);
+	Tree* CreateLeft();
+	Tree* CreateLeft(std::string& data);
+	Tree* CreateRight();
+	Tree* CreateRight(std::string& data);
 
 	void DeleteLeft();
 	void DeleteRight();
@@ -67,20 +67,32 @@ std::string& Tree::GetData() {
 	return data;
 }
 
-void Tree::CreateLeft() {
+Tree* Tree::CreateLeft() {
+	if (left != nullptr)
+		throw std::exception("Tree: left subtree isn't empty");
 	left = new Tree();
+	return left;
 }
 
-void Tree::CreateLeft(std::string& data) {
+Tree* Tree::CreateLeft(std::string& data) {
+	if (left != nullptr)
+		throw std::exception("Tree: left subtree isn't empty");
 	left = new Tree(data);
+	return left;
 }
 
-void Tree::CreateRight() {
+Tree* Tree::CreateRight() {
+	if (right != nullptr)
+		throw std::exception("Tree: right subtree isn't empty");
 	right = new Tree();
+	return right;
 }
 
-void Tree::CreateRight(std::string& data) {
+Tree* Tree::CreateRight(std::string& data) {
+	if (right != nullptr)
+		throw std::exception("Tree: right subtree isn't empty");
 	right = new Tree(data);
+	return right;
 }
 
 void Tree::DeleteLeft() {

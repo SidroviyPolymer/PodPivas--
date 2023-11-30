@@ -25,5 +25,7 @@ public:
 
 	std::string& GetContent();
 
+	std::pair<int, int> GetPos();
+
 	friend std::ostream& operator<<(std::ostream&, const Token&);
 };

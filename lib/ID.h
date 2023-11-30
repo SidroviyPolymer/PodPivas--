@@ -17,7 +17,7 @@ private:
 	Type type;
 	int line;
 	int column;
-	std::string area;
+	std::string area = "undefined";
 
 public:
 	ID();
