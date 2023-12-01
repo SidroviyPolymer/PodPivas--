@@ -18,14 +18,20 @@ Tree::Tree(Tree* tree) : left(nullptr), right(nullptr) {
 		left = new Tree(tree->GetLeft());
 	if (tree->GetRight() != nullptr)
 		right = new Tree(tree->GetRight());
-	//std::cout << left << "\t" << tree->GetLeft() << std::endl;
+	//std::cout << data << ":" << std::endl;
+	//std::cout << "L" << left << "\t" << tree->GetLeft() << std::endl;
+	//std::cout << "R" << right << "\t" << tree->GetRight() << std::endl;
 }
 
 Tree::~Tree() {
-	if (left != nullptr)
+	if (left != nullptr) {
 		delete left;
-	if (right != nullptr)
+		left = nullptr;
+	}		
+	if (right != nullptr) {
 		delete right;
+		right = nullptr;
+	}		
 }
 
 void Tree::SetLeft(Tree* tree) {
@@ -91,13 +97,17 @@ Tree* Tree::CreateRight(std::string& data) {
 }
 
 void Tree::DeleteLeft() {
-	if (left != nullptr)
+	if (left != nullptr) {
 		delete left;
+		left = nullptr;
+	}		
 }
 
 void Tree::DeleteRight() {
-	if (right != nullptr)
+	if (right != nullptr) {
 		delete right;
+		right = nullptr;
+	}
 }
 
 void Tree::Print() {
@@ -105,12 +115,16 @@ void Tree::Print() {
 }
 
 void Tree::PrintTree(Tree* tree, size_t level) {
-	if (tree == nullptr)
+	if (tree == nullptr) {
+		std::cout << std::endl;
 		return;
+	}		
 
 	for (size_t i = 0; i < level; ++i)
 		std::cout << "\t";
 	std::cout << tree->data << std::endl;
-	PrintTree(tree->left, level + 1);
-	PrintTree(tree->right, level + 1);
+	if (tree->left != nullptr || tree->right != nullptr) {
+		PrintTree(tree->left, level + 1);
+		PrintTree(tree->right, level + 1);
+	}
 }

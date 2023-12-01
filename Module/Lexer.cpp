@@ -214,11 +214,11 @@ void Lexer::Parse() {
 		isBegin = false;
 	}
 
-	for (size_t idx = 0; idx < flow->Length(); ++idx)
-		std::cout << idx << ":\t" << flow->At(idx) << std::endl;
+	//for (size_t idx = 0; idx < flow->Length(); ++idx)
+	//	std::cout << idx << ":\t" << flow->At(idx) << std::endl;
 
-	for (size_t idx = 0; idx < flow2->Length(); ++idx)
-		std::cout << idx << ":\t" << flow2->At(idx).GetLine() << " " << flow2->At(idx).GetColumn() << std::endl;
+	//for (size_t idx = 0; idx < flow2->Length(); ++idx)
+	//	std::cout << idx << ":\t" << flow2->At(idx).GetLine() << " " << flow2->At(idx).GetColumn() << std::endl;
 
 }
 

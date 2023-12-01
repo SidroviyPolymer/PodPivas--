@@ -22,7 +22,7 @@ private:
 	bool Constant(Token);
 
 	bool VariableSection(Tree*, std::string);
-	bool DescriptionSimilarVar(Tree*, std::string);
+	bool DescriptionSimilarVar(Tree*, std::string, size_t);
 
 	Tree* syntaxTree;
 

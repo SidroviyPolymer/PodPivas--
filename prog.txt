@@ -5,5 +5,10 @@ const
 	b = -a;
 	c = (a + b) * a;
 
+var
+	_a : integer;
+	_ab, _b : integer;
+	_d, _e, ff, gg : integer;
+
 begin
 end.

@@ -100,9 +100,12 @@ bool Syntax::Block(Tree* tree, std::string area) {
 	if (ConstantSection(definitions, area))
 		definitions = definitions->CreateRight();
 
+	//tree->Print();
+
 	//<variables_section>
-	if (VariableSection(definitions, area))
-		definitions = definitions->CreateRight();
+	if (VariableSection(definitions, area)) {
+		//definitions->Print();
+	}		
 
 	//<procedures_section>
 
@@ -132,14 +135,16 @@ bool Syntax::ConstantSection(Tree* tree, std::string area) {
 		return false;
 	}	
 	
+	Tree* prev = tree;
 	tree = tree->CreateRight();
 
 	//[{<definition_constant>}]
 	while (DefinitionConstant(tree, area)) {
+		prev = tree;
 		tree = tree->CreateRight();
 	}
 
-	delete tree;
+	prev->DeleteRight();
 }
 
 bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
@@ -324,17 +329,87 @@ bool Syntax::VariableSection(Tree* tree, std::string area) {
 	tokens->Pop_front();
 
 	tree->SetData("var");
-	tree = tree->CreateLeft();
+	Tree* DStree = tree->CreateLeft();
 
 	//<description_similar_var>
-	if (!DescriptionSimilarVar(tree, area)) {
+	size_t DSidx = 0;
+	if (!DescriptionSimilarVar(DStree, area, DSidx++)) {
 		//Îøèáêà
 		return false;
 	}
 
+	//;
+	Token semicolon = tokens->At(0);
+	if (!Semicolon(semicolon)) {
+		//Îøèáêà
+		return false;
+	}
+	tokens->Pop_front();
+
 	//[<description_similar_var>]
+	Tree* prev = DStree;
+	DStree = DStree->CreateRight();
+	while (DescriptionSimilarVar(DStree, area, DSidx++)) {
+		prev = DStree;
+		DStree = DStree->CreateRight();
+	}
+	prev->DeleteRight();
+
+	return true;
 }
 
-bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area) {
+bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area, size_t idx) {
+	if (tokens->Length() == 0)
+		return false;	
 
+	//std::cout << "DS" + std::to_string(idx) << std::endl;
+	tree->SetData("DS" + std::to_string(idx));
+	tree = tree->CreateLeft();
+
+	//name
+	Token name = tokens->At(0);
+	if (!DefineName(name, ID::Type::Var, area)) {
+		//Îøèáêà
+		return false;
+	}
+	tokens->Pop_front();
+	tree->SetData(name.GetContent());
+
+	//[{, name}]
+	Token comma = tokens->At(0);
+	Tree* prev = tree;
+	tree = tree->CreateRight();
+	while (comma.GetContent() == ",") {
+		tokens->Pop_front();
+		Token name = tokens->At(0);
+		if (!DefineName(name, ID::Type::Var, area)) {
+			//Îøèáêà
+			return false;
+		}
+		tokens->Pop_front();
+		tree->SetData(name.GetContent());
+		
+		comma = tokens->At(0);
+		prev = tree;
+		tree = tree->CreateRight();
+	}
+	prev->DeleteRight();
+
+	//:
+	Token colon = tokens->At(0);
+	if (colon.GetContent() != ":") {
+		//Îøèáêà
+		return false;
+	}
+	tokens->Pop_front();
+
+	//integer
+	Token integer = tokens->At(0);
+	if (integer.GetContent() != "integer") {
+		//Îøèáêà
+		return false;
+	}
+	tokens->Pop_front();
+
+	return true;
 }
