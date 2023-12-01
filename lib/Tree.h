@@ -15,6 +15,7 @@ private:
 public:
 	Tree();
 	Tree(std::string& data);
+	Tree(Tree*);
 	~Tree();
 
 	void SetLeft(Tree*);

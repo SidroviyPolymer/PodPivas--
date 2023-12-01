@@ -57,8 +57,11 @@ int main() {
 		Syntax* sx = new Syntax(tokens, ids, errlist);
 		bool sxGood = sx->Process();
 		if (!sxGood) {
-
+			return 0;
 		}
+
+		Tree* syntaxTree = sx->GetTree();
+		syntaxTree->Print();
 
 		idos.open("s_idos.log");
 		ids->PrintAllLn(idos);

@@ -13,6 +13,10 @@ bool Syntax::Process() {
 	return isGood;
 }
 
+Tree* Syntax::GetTree() {
+	return syntaxTree;
+}
+
 void Syntax::Program() {
 	//program
 	Token program = tokens->At(0);
@@ -128,7 +132,6 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 	}
 	tokens->Pop_front();
 	tree->SetData(name.GetContent());
-	tree = tree->CreateLeft();
 
 	//=
 	Token equal = tokens->At(0);
@@ -140,7 +143,7 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 
 	//<constant_expression>	
 	size_t idx = 0;
-	if (!ConstantExpression(tree, idx)) {
+	if (!ConstantExpression(tree->CreateLeft(), idx)) {
 		//Œÿ»¡ ¿
 		return false;
 	}
@@ -157,8 +160,10 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 }
 
 bool Syntax::ConstantExpression(Tree* tree, size_t& idx) {
+	Tree* exprTree = new Tree();
+
 	//<consant_term>
-	if (!ConstantTerm(tree, idx)) {
+	if (!ConstantTerm(exprTree->CreateLeft(), idx)) {
 		//Œ¯Ë·Í‡
 		return false;
 	}
@@ -166,41 +171,55 @@ bool Syntax::ConstantExpression(Tree* tree, size_t& idx) {
 	//+
 	Token lp_operator = tokens->At(idx++);
 	if (lp_operator.GetContent() != "+" || lp_operator.GetContent() != "-") {
-
+		Tree* tmp = new (tree) Tree(exprTree->GetLeft());
+		delete exprTree;
 		return true;
 	}		
+	exprTree->SetData(lp_operator.GetContent());
 
 	//<constant_expression>
-	if (!ConstantExpression(tree, idx)) {
+	if (!ConstantExpression(exprTree->CreateRight(), idx)) {
 		//Œÿ»¡ ¿
 		return false;
 	}
+
+	tree->SetLeft(exprTree);
 }
 
 bool Syntax::ConstantTerm(Tree* tree, size_t& idx) {
+	Tree* exprTree = new Tree();
+
 	//<constant_factor>
-	if (!ConstantFactor(tree, idx)) {
+	if (!ConstantFactor(exprTree->CreateLeft(), idx)) {
 		//Œ¯Ë·Í‡
 		return false;
 	}
 
-	//[* <constant_term>]
-	Token mult = tokens->At(0);
-	if (mult.GetContent() != "*")
+	//(*, /, div, mod)
+	Token hp_operator = tokens->At(0);
+	if (hp_operator.GetContent() != "*" && hp_operator.GetContent() != "/" && hp_operator.GetContent() != "div" && hp_operator.GetContent() != "mod") {
+		Tree* tmp = new (tree) Tree(exprTree->GetLeft());
+		delete exprTree;
 		return true;
+	}		
+	exprTree->SetData(hp_operator.GetContent());
 
-	//<constant_term>
-	if (!ConstantTerm(tree, idx)) {
+	//<constant_term>	
+	if (!ConstantTerm(exprTree->GetRight(), idx)) {
 		//Œ¯Ë·Í‡
 		return false;
 	}
+
+	tree->SetLeft(exprTree);
 }
 
 bool Syntax::ConstantFactor(Tree* tree, size_t& idx) {
 	//<constant>
 	Token constant = tokens->At(0);
 	if (Constant(constant)) {
+		tokens->Pop_front();
 		tree->SetData(constant.GetContent());
+		tree->DeleteLeft();
 		return true;
 	}
 
@@ -210,10 +229,20 @@ bool Syntax::ConstantFactor(Tree* tree, size_t& idx) {
 		//Œ¯Ë·Í‡
 		return false;
 	}
+	tokens->Pop_front();
 
 	//<constant_expression>
-	
+	if (!ConstantExpression(tree, idx)) {
+		//Œÿ»¡ ¿
+		return false;
+	}
+
 	//)
+	Token close = tokens->At(0);
+	if (close.GetContent() != ")") {
+		//Œ¯Ë·Í‡
+		return false;
+	}
 }
 
 bool Syntax::Constant(Token constant) {

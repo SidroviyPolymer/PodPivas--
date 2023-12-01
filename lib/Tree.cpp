@@ -12,6 +12,8 @@ Tree::Tree(std::string& data) {
 	right = nullptr;
 }
 
+Tree::Tree(Tree* tree) : left(tree->GetLeft() != nullptr ? tree->GetLeft() : nullptr), right(tree->GetRight() != nullptr ? tree->GetRight() : nullptr), data(tree->data) {}
+
 Tree::~Tree() {
 	if (left != nullptr)
 		delete left;
@@ -27,8 +29,8 @@ void Tree::SetLeft(Tree* tree) {
 }
 
 Tree* Tree::GetLeft() {
-	if (left == nullptr)
-		throw std::exception("Tree: left subtree doesn't exists");
+	//if (left == nullptr)
+	//	throw std::exception("Tree: left subtree doesn't exists");
 	return left;
 }
 
@@ -40,8 +42,8 @@ void Tree::SetRight(Tree* tree) {
 }
 
 Tree* Tree::GetRight() {
-	if (right == nullptr)
-		throw std::exception("Tree: right subtree doesn't exists");
+	//if (right == nullptr)
+	//	throw std::exception("Tree: right subtree doesn't exists");
 	return right;
 }
 

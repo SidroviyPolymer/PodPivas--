@@ -27,9 +27,11 @@ private:
 	List<ID>* ids;
 	List<Error>* errlist;
 
-	bool isGood;
+	bool isGood = true;
 public:
 	Syntax(List<Token>* tokens, List<ID>* ids, List<Error>* errlist);
 
 	bool Process();
+
+	Tree* GetTree();
 };
