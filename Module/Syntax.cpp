@@ -350,6 +350,13 @@ bool Syntax::VariableSection(Tree* tree, std::string area) {
 	Tree* prev = DStree;
 	DStree = DStree->CreateRight();
 	while (DescriptionSimilarVar(DStree, area, DSidx++)) {
+		//;
+		Token semicolon = tokens->At(0);
+		if (!Semicolon(semicolon)) {
+			//Îøèáêà
+			return false;
+		}
+		tokens->Pop_front();
 		prev = DStree;
 		DStree = DStree->CreateRight();
 	}
