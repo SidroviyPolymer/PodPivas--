@@ -16,10 +16,13 @@ private:
 
 	bool ConstantSection(Tree*, std::string);
 	bool DefinitionConstant(Tree*, std::string);
-	bool ConstantExpression(Tree*, size_t&);
-	bool ConstantTerm(Tree*, size_t&);
-	bool ConstantFactor(Tree*, size_t&);
+	bool ConstantExpression(Tree*);
+	bool ConstantTerm(Tree*);
+	bool ConstantFactor(Tree*);
 	bool Constant(Token);
+
+	bool VariableSection(Tree*, std::string);
+	bool DescriptionSimilarVar(Tree*, std::string);
 
 	Tree* syntaxTree;
 

@@ -12,7 +12,14 @@ Tree::Tree(std::string& data) {
 	right = nullptr;
 }
 
-Tree::Tree(Tree* tree) : left(tree->GetLeft() != nullptr ? tree->GetLeft() : nullptr), right(tree->GetRight() != nullptr ? tree->GetRight() : nullptr), data(tree->data) {}
+Tree::Tree(Tree* tree) : left(nullptr), right(nullptr) {
+	data = tree->data;
+	if (tree->GetLeft() != nullptr)
+		left = new Tree(tree->GetLeft());
+	if (tree->GetRight() != nullptr)
+		right = new Tree(tree->GetRight());
+	//std::cout << left << "\t" << tree->GetLeft() << std::endl;
+}
 
 Tree::~Tree() {
 	if (left != nullptr)
@@ -103,7 +110,7 @@ void Tree::PrintTree(Tree* tree, size_t level) {
 
 	for (size_t i = 0; i < level; ++i)
 		std::cout << "\t";
-	std::cout << data << std::endl;
-	PrintTree(left, level + 1);
-	PrintTree(right, level + 1);
+	std::cout << tree->data << std::endl;
+	PrintTree(tree->left, level + 1);
+	PrintTree(tree->right, level + 1);
 }
