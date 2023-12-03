@@ -259,7 +259,8 @@ void List<T>::PrintAllLn(std::ostream& os) const {
 		ptr = ptr->next;
 	}		
 
-	os << ptr->data << std::endl;
+	if (ptr != nullptr)
+		os << ptr->data << std::endl;
 }
 
 //template <typename T>
