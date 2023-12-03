@@ -1,20 +1,72 @@
-﻿// Code_Generator.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
+﻿#include <iostream>
+#include <string>
+#include <stack>
 
-#include <iostream>
+using namespace std;
+
+struct TreeNode
+{
+    string data;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(string data):data(data), left(nullptr), right(nullptr){}
+};
+class Tree
+{
+private:
+    string TreeString(TreeNode* node)
+    {
+        string leftStr = (node->left == nullptr) ? "{}" : TreeString(node->left);
+        string rightStr = (node->right == nullptr) ? "{}" : TreeString(node->right);
+        string result = "{" + node->data + leftStr + rightStr + "}";
+        return result;
+    };
+
+public:
+    TreeNode* Root;
+    Tree() :Root(nullptr) {}
+    Tree(TreeNode* RootNode) :Root(RootNode) {}
+    void Print()
+    {
+        if (this->Root == nullptr)
+        {
+            cout << "{}" << endl;
+        }
+        else
+        {
+            cout << this->TreeString(this->Root) << endl;
+        }
+    };
+};
+
+void Expression(Tree tree)
+{
+    string op;
+    if (tree.Root->data == "+")
+    {
+        op = int(tree.Root->left->left->data) + int(tree.Root->left->right->data)
+    }
+}
+
+void Term(string op)
+{
+    cout << "mov " << "ax, " << op << endl;
+}
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    TreeNode root("+");
+    TreeNode op("op");
+    TreeNode op1("5");
+    TreeNode op2("6");
+    root.left = &op;
+    op.left = &op1;
+    op.right = &op2;
+    Tree myTree{&root};
+    myTree.Print();
+    Expression(myTree);
+    cout << "mov ax,4C00h" << endl;
+    cout << "int 21h";
 }
 
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
 
-// Советы по началу работы 
-//   1. В окне обозревателя решений можно добавлять файлы и управлять ими.
-//   2. В окне Team Explorer можно подключиться к системе управления версиями.
-//   3. В окне "Выходные данные" можно просматривать выходные данные сборки и другие сообщения.
-//   4. В окне "Список ошибок" можно просматривать ошибки.
-//   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
-//   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
