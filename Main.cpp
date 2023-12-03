@@ -20,7 +20,7 @@ int main() {
 		std::string fileSrc = "prog.txt";
 		List<Token>* tokens = new List<Token>();
 		List<ID>* ids = new List<ID>();
-		bool lxGood = lx->Process(tokens, ids, "../" + fileSrc, errlist);
+		bool lxGood = lx->Process(tokens, ids, fileSrc, errlist);
 		if (!lxGood) {
 			std::ofstream erros, tokos, idos;
 			erros.open("errors.log");
