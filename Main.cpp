@@ -66,6 +66,9 @@ int main() {
 		idos.open("s_idos.log");
 		ids->PrintAllLn(idos);
 		idos.close();		
+
+		Generator* gen = new Generator(ids, syntaxTree);
+		gen->Process();
 	}
 	catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
