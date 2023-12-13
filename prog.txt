@@ -13,5 +13,6 @@ var
 begin
 _a := 5;
 _ab := 7;
+exit;
 _d := a * 5 + (_a + _b) * 7;
 end.

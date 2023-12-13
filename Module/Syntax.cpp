@@ -157,6 +157,7 @@ bool Syntax::ConstantSection(Tree* tree, std::string area) {
 	}
 
 	prev->DeleteRight();
+	return true;
 }
 
 bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
@@ -496,7 +497,9 @@ bool Syntax::SimpleOperator(Tree* tree, std::string label, size_t idx) {
 	//<procedure_operator>
 	
 	//<exit_operator>
-	
+	if (ExitOperator(tree, label, idx))
+		return true;
+
 	//<null_operator>
 
 	return false;
@@ -652,6 +655,20 @@ bool Syntax::isVar(Token token) {
 		return id.GetType() == ID::Type::Var;
 	}
 	return false;
+}
+
+bool Syntax::ExitOperator(Tree* tree, std::string label, size_t idx) {
+	Token exit = tokens->At(0);
+	if (exit.GetContent() != "exit") {
+		return false;
+	}
+	tokens->Pop_front();
+
+	tree->SetData(label + std::to_string(idx));
+	tree = tree->CreateLeft();
+	tree->SetData("exit");
+
+	return true;
 }
 
 void Syntax::NULLOP(Tree* tree, std::string label, size_t idx) {

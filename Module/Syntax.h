@@ -35,8 +35,9 @@ private:
 	bool Factor(Tree*);
 	bool isVar(Token);
 
-	void NULLOP(Tree*, std::string, size_t);
+	bool ExitOperator(Tree*, std::string, size_t);
 
+	void NULLOP(Tree*, std::string, size_t);
 
 	Tree* syntaxTree;
 
