@@ -118,7 +118,7 @@ void Tree::PrintTree(Tree* tree, size_t level) {
 	if (tree == nullptr) {
 		for (size_t i = 0; i < level; ++i)
 			std::cout << "\t";
-		std::cout << "NULL" << std::endl;
+		std::cout << "_NOTHING_" << std::endl;
 		return;
 	}		
 

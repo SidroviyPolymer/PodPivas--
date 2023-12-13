@@ -136,7 +136,7 @@ void Lexer::Parse() {
 			continue;
 		}
 
-		if (tmp == ':' || tmp == ',' || tmp == ';' || tmp == '(' || tmp == ')' || tmp == '+' || tmp == '-' || tmp == '*') { // Если встретили терминальный символ,а не коммент
+		if (tmp == ':' || tmp == ',' || tmp == ';' || tmp == '(' || tmp == ')' || tmp == '+' || tmp == '-' || tmp == '*' || tmp == '.') { // Если встретили терминальный символ,а не коммент
 			if (word != "") {
 				flow->Push_back(word);
 				Pos* buf = new Pos(line, column - word.length());

@@ -57,6 +57,13 @@ void Syntax::Program() {
 	if (!Block(syntaxTree, "global")) {
 		//Œ¯Ë·Í‡
 	}
+
+	//.
+	Token point = tokens->At(0);
+	if (point.GetContent() != "point") {
+		//Œ¯Ë·Í‡;
+	}
+	tokens->Pop_front();
 }
 
 bool Syntax::DefineName(Token& name, ID::Type type, std::string area) {
@@ -95,6 +102,7 @@ bool Syntax::Block(Tree* tree, std::string area) {
 		return false;
 
 	Tree* definitions = tree->CreateLeft();
+	Tree* operators = tree->CreateRight();
 
 	//<constant_section>
 	if (ConstantSection(definitions, area))
@@ -110,6 +118,10 @@ bool Syntax::Block(Tree* tree, std::string area) {
 	//<procedures_section>
 
 	//<operators_section>
+	if (OperatorsSection(operators, "OP", 1)) {
+		//Œ¯Ë·Í‡
+		return false;
+	}
 
 	return true;
 }
@@ -302,19 +314,17 @@ bool Syntax::Constant(Token constant) {
 		return true;
 	}
 	//<constant_name>
-	else if (constant.GetType() == Token::Type::Id) {
+	if (constant.GetType() == Token::Type::Id) {
 		size_t idx = std::stoi(constant.GetContent().substr(2));
 		ID& id = ids->At(idx);
 		return id.GetType() == ID::Type::Const;
 	}
 	//<sign><constant_name>
-	else if (constant.GetContent() == "-" || constant.GetContent() == "+") {
+	if (constant.GetContent() == "-" || constant.GetContent() == "+") {
 		return Constant(tokens->At(1));
 	}
-	else {
-		//Œ¯Ë·Í‡
-		return false;
-	}
+	//Œ¯Ë·Í‡
+	return false;
 }
 
 bool Syntax::VariableSection(Tree* tree, std::string area) {
@@ -419,4 +429,233 @@ bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area, size_t idx) {
 	tokens->Pop_front();
 
 	return true;
+}
+
+bool Syntax::OperatorsSection(Tree* tree, std::string label, size_t idx) {
+	//<compound operator>
+	return CompoundOperator(tree, label, idx);	
+}
+
+bool Syntax::CompoundOperator(Tree* tree, std::string label, size_t idx) {
+	if (tokens->Length() == 0)
+		return false;
+
+	//begin	
+	Token _begin = tokens->At(0);
+	if (_begin.GetContent() != "begin") {
+		//Œ¯Ë·Í‡
+		return false;
+	}		
+	tokens->Pop_front();
+
+	//operator
+	if(Operator(tree, label, idx))
+		tree = tree->CreateRight();
+
+	//[{; <operator>}]	
+	Token semicolon = tokens->At(0);	
+	while (semicolon.GetContent() == ";") {
+		tokens->Pop_front();		
+		if (Operator(tree, label, ++idx))
+			tree = tree->CreateRight();
+		semicolon = tokens->At(0);
+	}
+
+	//null-operator
+	NULLOP(tree, label, idx);
+
+	//end
+	Token end = tokens->At(0);
+	if (end.GetContent() != "end") {
+		//Œ¯Ë·Í‡
+		return false;
+	}
+	tokens->Pop_front();
+
+	return true;
+}
+
+bool Syntax::Operator(Tree* tree, std::string label, size_t idx) {
+	//<simple operator>
+
+	if (SimpleOperator(tree, label, idx))
+		return true;
+
+	//<complex operator>	
+	//if (ComplexOperator(label + std::to_string(idx) + "_", 1)) {
+	//
+	//}
+	return false;
+}
+
+bool Syntax::SimpleOperator(Tree* tree, std::string label, size_t idx) {
+	//<assignment_operator>
+	if (AssigmentOperator(tree, label, idx))
+		return true;
+
+	//<procedure_operator>
+	
+	//<exit_operator>
+	
+	//<null_operator>
+
+	return false;
+}
+
+bool Syntax::AssigmentOperator(Tree* tree, std::string label, size_t idx) {
+	//<variable>
+	Token var = tokens->At(0);
+	if (!isVar(var))
+		return false;
+	tokens->Pop_front();
+
+	//:=
+	Token assign = tokens->At(0);
+	if (assign.GetContent() != ":=") {
+		//Œ¯Ë·Í‡
+		return false;
+	}
+	tokens->Pop_front();
+	
+	//<expression>
+	Tree* exprTree = new Tree();
+	if (!Expression(exprTree)) {
+		//Œ¯Ë·Í‡
+		return false;
+	}
+
+	tree->SetData(label + std::to_string(idx));
+	tree = tree->CreateLeft();
+	tree->SetData(":=");
+	tree->CreateLeft(var.GetContent());
+	tree->CreateRight();
+	tree->SetRight(exprTree);
+
+	return true;
+}
+
+bool Syntax::Expression(Tree* tree) {
+	if (tokens->Length() == 0)
+		return false;
+
+	Tree* exprTree = new Tree();
+
+	//<term>
+	if (!Term(exprTree->CreateLeft())) {
+		//Œ¯Ë·Í‡
+		return false;
+	}
+
+	//+
+	Token lp_operator = tokens->At(0);
+	if (lp_operator.GetContent() != "+" && lp_operator.GetContent() != "-") {
+		Tree* tmp = new (tree) Tree(exprTree->GetLeft());
+		delete exprTree;
+		return true;
+	}
+	tokens->Pop_front();
+	exprTree->SetData(lp_operator.GetContent());
+
+	//<expression>
+	if (!Expression(exprTree->CreateRight())) {
+		//Œÿ»¡ ¿
+		return false;
+	}
+
+	Tree* tmp = new (tree) Tree(exprTree);
+	delete exprTree;
+	return true;
+}
+
+bool Syntax::Term(Tree* tree) {
+	if (tokens->Length() == 0)
+		return false;
+
+	Tree* exprTree = new Tree();
+
+	//<factor>
+	if (!Factor(exprTree->CreateLeft())) {
+		//Œ¯Ë·Í‡
+		return false;
+	}
+
+	//(*, /, div, mod)
+	Token hp_operator = tokens->At(0);
+	if (hp_operator.GetContent() != "*" && hp_operator.GetContent() != "/" && hp_operator.GetContent() != "div" && hp_operator.GetContent() != "mod") {
+		Tree* tmp = new (tree) Tree(exprTree->GetLeft());
+		delete exprTree;
+		return true;
+	}
+	tokens->Pop_front();
+	exprTree->SetData(hp_operator.GetContent());
+
+	//<term>	
+	if (!Term(exprTree->CreateRight())) {
+		//Œ¯Ë·Í‡
+		return false;
+	}
+
+	Tree* tmp = new (tree) Tree(exprTree);
+	delete exprTree;
+	return true;
+}
+
+bool Syntax::Factor(Tree* tree) {
+	if (tokens->Length() == 0)
+		return false;
+
+	//<identificator>
+	Token id = tokens->At(0);
+	if (isVar(id) || Constant(id)) {
+		if (id.GetContent() == "-") {
+			tokens->Pop_front();
+			tree->SetData(id.GetContent());
+			id = tokens->Pop_front();
+			tree->CreateLeft()->SetData(id.GetContent());
+		}
+		else {
+			tokens->Pop_front();
+			tree->SetData(id.GetContent());
+		}
+		return true;
+	}
+
+	//(
+	Token open = tokens->At(0);
+	if (open.GetContent() != "(") {
+		//Œ¯Ë·Í‡
+		return false;
+	}
+	tokens->Pop_front();
+
+	//<expression>
+	if (!Expression(tree)) {
+		//Œÿ»¡ ¿
+		return false;
+	}
+
+	//)
+	Token close = tokens->At(0);
+	if (close.GetContent() != ")") {
+		//Œ¯Ë·Í‡
+		return false;
+	}
+	tokens->Pop_front();
+
+	return true;
+}
+
+bool Syntax::isVar(Token token) {
+	if (token.GetType() == Token::Type::Id) {
+		size_t idx = std::stoi(token.GetContent().substr(2));
+		ID id = ids->At(idx);
+		return id.GetType() == ID::Type::Var;
+	}
+	return false;
+}
+
+void Syntax::NULLOP(Tree* tree, std::string label, size_t idx) {
+	tree->SetData(label + std::to_string(idx));
+	tree = tree->CreateLeft();
+	tree->SetData("NULL");
 }
