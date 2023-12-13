@@ -2,8 +2,8 @@ program PROG;
 
 const
 	a = 5;
-	b = -a;
-	c = (a + b) * a;
+	b = 9;
+	c = 6;
 
 var
 	_a : integer;

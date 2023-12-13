@@ -68,7 +68,7 @@ int main() {
 		idos.close();		
 
 		Generator* gen = new Generator(ids, syntaxTree);
-		gen->Process();
+		gen->Working();
 	}
 	catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
