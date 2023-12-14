@@ -24,6 +24,21 @@ private:
 	bool VariableSection(Tree*, std::string);
 	bool DescriptionSimilarVar(Tree*, std::string, size_t);
 
+	bool OperatorsSection(Tree*, std::string, size_t);
+	bool CompoundOperator(Tree*, std::string, size_t);
+	bool Operator(Tree*, std::string, size_t);
+
+	bool SimpleOperator(Tree*, std::string, size_t);
+	bool AssigmentOperator(Tree*, std::string, size_t);
+	bool Expression(Tree*);
+	bool Term(Tree*);
+	bool Factor(Tree*);
+	bool isVar(Token);
+
+	bool ExitOperator(Tree*, std::string, size_t);
+
+	void NULLOP(Tree*, std::string, size_t);
+
 	Tree* syntaxTree;
 
 	List<Token>* tokens;
