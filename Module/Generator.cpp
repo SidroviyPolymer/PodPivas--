@@ -28,6 +28,7 @@ void Generator::Process(Tree* tree)		 //мсфмн оепеохяюрэ
 	if (data == "const") _const = tree->GetLeft();
 	if (data == "var") _var = tree->GetLeft(); 
 
+
 }
 
 /*void Generator::ProcessInd(int index)		//мсфмн оепеохяюрэ
