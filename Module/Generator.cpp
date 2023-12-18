@@ -164,4 +164,4 @@ void Generator::Working()
 {
 	Start();
 	Finish();
-}f
+}
