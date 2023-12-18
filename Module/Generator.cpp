@@ -17,37 +17,21 @@ void Generator::TreeTraversal(Tree* tree)		//проходим все синтаксическое дерево 
 	//cout << tree->GetData() << endl;
 }
 
-void Generator::Process(Tree* tree)		 //НУЖНО ПЕРЕПИСАТЬ
+void Generator::Process(Tree* tree)		
 {
-	string data = tree->GetData();		//значение узла
+	string data = tree->GetData();		
 	if (tree->GetData().substr(0, 2) == "id")
 	{
 		int index = stoi(tree->GetData().substr(2));
-		if (ids->At(index).GetType() == 3) _name = ids->At(index).GetContent();
+		if (ids->At(index).GetType() == 3)
+		{
+			_name = ids->At(index).GetContent();
+			_code = tree->GetRight();
+		}
 	}
 	if (data == "const") _const = tree->GetLeft();
 	if (data == "var") _var = tree->GetLeft(); 
-
-
 }
-
-/*void Generator::ProcessInd(int index)		//НУЖНО ПЕРЕПИСАТЬ
-{
-	switch (ids->At(index).GetType())
-	{
-	case 0:
-		//работа с переменными
-		break;
-	case 2:
-		//работа с процедурами
-		break;
-	case 3:
-		cout << ids->At(index).GetContent() << ":" << endl;
-		break;
-	default:
-		break;
-	}
-}*/
 
 void Generator::Constant(Tree* tree)
 {
@@ -57,12 +41,12 @@ void Generator::Constant(Tree* tree)
 	//cout << tree->GetData() << endl;
 }
 
-void Generator::ConstantProcess(Tree* tree)		//подумать, мб поменять обход
+void Generator::ConstantProcess(Tree* tree)		
 {
 	if (tree->GetLeft() != nullptr)
 	{
 		int index = stoi(tree->GetData().substr(2));
-		cout << "constant " << ids->At(index).GetContent() << " dd " << tree->GetLeft()->GetData() << endl;		//тут нужно написать K EQU 5, это и будет константа
+		cout << ids->At(index).GetContent() << " EQU " << tree->GetLeft()->GetData() << endl;		
 	}
 }
 
@@ -82,6 +66,74 @@ void Generator::VariableProcess(Tree* tree)
 	}
 }
 
+void Generator::Operator(Tree* tree)
+{
+	if (tree->GetLeft() != nullptr) Operator(tree->GetLeft());
+	if (tree->GetRight() != nullptr) Operator(tree->GetRight());
+	OperatorProcess(tree);
+}
+
+void Generator::OperatorProcess(Tree* tree)
+{
+	if (tree->GetData().substr(0, 2) == "id")
+	{
+		int index = stoi(tree->GetData().substr(2));
+		cout << "push " << ids->At(index).GetContent() << endl;
+	}
+	else
+	{
+		if ((tree->GetData() == "+") or (tree->GetData() == "*") or (tree->GetData() == ":=") or (tree->GetData() == "-") or (tree->GetData() == "div"))
+		{
+			if (tree->GetData() == "+")
+			{
+				cout << "pop BX" << endl;
+				cout << "pop AX" << endl;
+				cout << "add AX, BX" << endl;
+				cout << "push AX" << endl;
+			}
+			if (tree->GetData() == "*")
+			{
+				cout << "pop BX" << endl;
+				cout << "pop AX" << endl;
+				cout << "mul BX" << endl;
+				cout << "push AX" << endl;
+			}
+			if (tree->GetData() == ":=")
+			{
+				int index = stoi(tree->GetLeft()->GetData().substr(2));
+				cout << "pop AX" << endl;
+				cout << "mov " << ids->At(index).GetContent() << ", AX" << endl;
+			}
+			if (tree->GetData() == "-")
+			{
+				cout << "pop BX" << endl;
+				cout << "pop AX" << endl;
+				cout << "sub AX, BX" << endl;
+				cout << "push AX" << endl;
+			}
+			if (tree->GetData() == "div")
+			{
+				cout << "pop BX" << endl;
+				cout << "pop AX" << endl;
+				cout << "div BX" << endl;
+				cout << "push AX" << endl;
+			}
+		}
+		else
+		{
+			if ((tree->GetData() != "NULL") and (tree->GetData().substr(0, 2) != "OP") and (tree->GetData() != "exit"))
+			{
+				cout << "push " << tree->GetData() << endl;
+			}
+		}
+	}	
+	if (tree->GetData() == "exit")
+	{
+		cout << "jmp exit" << endl;
+		exit_flag = 1;
+	}
+}
+
 void Generator::Start()
 {
 	cout << ".model tiny" << endl;
@@ -92,18 +144,19 @@ void Generator::Start()
 
 void Generator::Finish()
 {
-	Constant(_const);
-	Variable(_var);
+	if (_const != nullptr) Constant(_const);
+	if (_var != nullptr) Variable(_var);
 	cout << ".code" << endl;		
 	cout << _name << ":" << endl;
 	cout << "mov ax, @Data" << endl;
 	cout << "mov ds, ax" << endl;
-	cout << "!!!CODE!!!" << endl;
+	if (_code != nullptr) Operator(_code);
+	if (exit_flag == 1) cout << "exit:" << endl;
 	cout << "mov ax,4C00h" << endl;
 	cout << "int 21h" << endl;
 	if ((ids->At(0).GetType() == 3))
 	{
-		cout << "end " << ids->At(0).GetContent();
+		cout << "end " << ids->At(0).GetContent() << endl;
 	}
 }
 
@@ -111,4 +164,4 @@ void Generator::Working()
 {
 	Start();
 	Finish();
-}
+}f

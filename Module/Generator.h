@@ -10,20 +10,22 @@ private:
 	List<ID>* ids;
 	Tree* syntaxTree;
 	Tree node;
-	//Tree GetNextNode();
-	//void ProcessInd(int index);
 	void Constant(Tree* tree);
 	void ConstantProcess(Tree* tree);
 	void Variable(Tree* tree);
 	void VariableProcess(Tree* tree);
+	void Operator(Tree* tree);
+	void OperatorProcess(Tree* tree);
 	void Process(Tree* tree);
 	void Start();
 	void TreeTraversal(Tree* tree);
 	void Finish();
-public:
 	Tree* _const;
 	Tree* _var;
+	Tree* _code;
 	std::string _name;
+	bool exit_flag = 0;
+public:
 	Generator(List<ID>* ids, Tree* syntaxTree);
 	void Working();
 };
