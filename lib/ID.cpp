@@ -17,6 +17,10 @@ ID::ID(std::string content, Type type, int Line, int Column) {
 ID::Type ID::GetType() { return type; }
 void ID::SetType(Type type) { this->type = type; }
 
+void ID::SetVal(int val) { this->val = val; }
+
+int ID::GetVal() { return val; }
+
 std::string ID::GetArea() { return area; }
 void ID::SetArea(std::string area) { this->area = area; }
 

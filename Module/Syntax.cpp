@@ -541,111 +541,182 @@ bool Syntax::Expression(Tree* tree) {
 	if (tokens->Length() == 0)
 		return false;
 
-	Tree* exprTree = new Tree();
+	List<Token> postfix;
 
-	//<term>
-	if (!Term(exprTree->CreateLeft())) {
-		//Îøèáêà
+	if (!GetPostfix(&postfix))
 		return false;
-	}
 
-	//+
-	Token lp_operator = tokens->At(0);
-	if (lp_operator.GetContent() != "+" && lp_operator.GetContent() != "-") {
-		Tree* tmp = new (tree) Tree(exprTree->GetLeft());
-		delete exprTree;
-		return true;
-	}
-	tokens->Pop_front();
-	exprTree->SetData(lp_operator.GetContent());
+	for (size_t idx = 0; idx < postfix.Length(); ++idx)
+		std::cout << postfix.At(idx).GetContent() << " ";
+	std::cout << std::endl;
 
-	//<expression>
-	if (!Expression(exprTree->CreateRight())) {
-		//ÎØÈÁÊÀ
-		return false;
-	}
-
-	Tree* tmp = new (tree) Tree(exprTree);
-	delete exprTree;
-	return true;
+	return GetExpressionTree(tree, &postfix);
 }
 
-bool Syntax::Term(Tree* tree) {
-	if (tokens->Length() == 0)
-		return false;
+bool Syntax::GetPostfix(List<Token>* result) {
+	List<Token> stack;
 
-	Tree* exprTree = new Tree();
+	bool exprExpected = true;
 
-	//<factor>
-	if (!Factor(exprTree->CreateLeft())) {
+	while (true) {
+		if (tokens->Length() == 0)
+			return false;
+
+		Token token = tokens->At(0);
+
+		if (token.GetContent() == "(") {
+			if (!exprExpected) {
+				//Îøèáêà
+				return false;
+			}
+
+			stack.Push_front(token);
+			tokens->Pop_front();
+			exprExpected = true;
+			continue;
+		}
+
+		if (token.GetContent() == "+" || token.GetContent() == "-") {
+			if (exprExpected) {
+				//Îøèáêà
+				return false;
+			}
+
+			if (stack.Length() != 0) {
+				Token tmp = stack.At(0);
+				while (tmp.GetContent() != "(") {
+					tmp = stack.Pop_front();
+					result->Push_back(tmp);
+					if (stack.Length() == 0)
+						break;
+					tmp = stack.At(0);
+				}
+			}
+			stack.Push_front(token);
+			tokens->Pop_front();
+			exprExpected = true;
+			continue;
+		}
+
+		if (token.GetContent() == "*" || token.GetContent() == "div") {
+			if (exprExpected) {
+				//Îøèáêà
+				return false;
+			}
+
+			if (stack.Length() != 0) {
+				Token tmp = stack.At(0);
+				while (tmp.GetContent() != "(" && tmp.GetContent() != "+" && tmp.GetContent() != "-") {
+					tmp = stack.Pop_front();
+					result->Push_back(tmp);
+					if (stack.Length() == 0)
+						break;
+					tmp = stack.At(0);
+				}
+			}
+			stack.Push_front(token);
+			tokens->Pop_front();
+			exprExpected = true;
+			continue;
+		}
+
+		if (token.GetContent() == ")") {
+			if (exprExpected) {
+				//Îøèáêà
+				return false;
+			}
+
+			if (stack.Length() != 0) {
+				Token tmp = stack.At(0);
+				if (tmp.GetContent() == "(") {
+					//Îøèáêà
+					return false;
+				}
+				while (tmp.GetContent() != "(") {
+					tmp = stack.Pop_front();
+					result->Push_back(tmp);
+					if (stack.Length() == 0 && tmp.GetContent() != ")") {
+						//Îøèáêà
+						return false;
+					}						
+					tmp = stack.At(0);
+				}
+			}
+			stack.Pop_front();
+			tokens->Pop_front();
+			continue;
+		}
+
+		if (isVar(token) || Constant(token)) {
+			if (!exprExpected) {
+				//Îøèáêà
+				return false;
+			}
+
+			result->Push_back(token);
+			tokens->Pop_front();
+			exprExpected = false;
+			continue;
+		}
+
+		if (token.GetContent() == ";" || token.GetContent() == "end") {
+			while (stack.Length() != 0) {
+				Token tmp = stack.Pop_front();
+				if (tmp.GetContent() == "(") {
+					//Îøèáêà
+					return false;
+				}
+
+				result->Push_back(tmp);
+			}
+
+			if (result->Length() == 0) {
+				//Îøèáêà
+				return false;
+			}
+
+			return true;
+		}			
+
 		//Îøèáêà
 		return false;
 	}
-
-	//(*, /, div, mod)
-	Token hp_operator = tokens->At(0);
-	if (hp_operator.GetContent() != "*" && hp_operator.GetContent() != "/" && hp_operator.GetContent() != "div" && hp_operator.GetContent() != "mod") {
-		Tree* tmp = new (tree) Tree(exprTree->GetLeft());
-		delete exprTree;
-		return true;
-	}
-	tokens->Pop_front();
-	exprTree->SetData(hp_operator.GetContent());
-
-	//<term>	
-	if (!Term(exprTree->CreateRight())) {
-		//Îøèáêà
-		return false;
-	}
-
-	Tree* tmp = new (tree) Tree(exprTree);
-	delete exprTree;
-	return true;
 }
 
-bool Syntax::Factor(Tree* tree) {
-	if (tokens->Length() == 0)
-		return false;
+bool Syntax::GetExpressionTree(Tree* tree, List<Token>* postfix) {	
+	Token _first = postfix->Pop_back();
 
-	//<identificator>
-	Token id = tokens->At(0);
-	if (isVar(id) || Constant(id)) {
-		if (id.GetContent() == "-") {
-			tokens->Pop_front();
-			tree->SetData(id.GetContent());
-			id = tokens->Pop_front();
-			tree->CreateLeft()->SetData(id.GetContent());
-		}
-		else {
-			tokens->Pop_front();
-			tree->SetData(id.GetContent());
-		}
+	if (isVar(_first) || Constant(_first)) {
+		tree->SetData(_first.GetContent());
 		return true;
 	}
 
-	//(
-	Token open = tokens->At(0);
-	if (open.GetContent() != "(") {
+	if (_first.GetType() != Token::Type::Operation) {
 		//Îøèáêà
 		return false;
 	}
-	tokens->Pop_front();
 
-	//<expression>
-	if (!Expression(tree)) {
-		//ÎØÈÁÊÀ
-		return false;
+	tree->SetData(_first.GetContent());
+
+	Token right = postfix->Pop_back();
+
+	if (right.GetType() == Token::Type::Operation) {
+		postfix->Push_back(right);
+		if (!GetExpressionTree(tree->CreateRight(), postfix))
+			return false;
 	}
+	else
+		tree->CreateRight(right.GetContent());
 
-	//)
-	Token close = tokens->At(0);
-	if (close.GetContent() != ")") {
-		//Îøèáêà
-		return false;
+	Token left = postfix->Pop_back();
+
+	if (left.GetType() == Token::Type::Operation) {
+		postfix->Push_back(left);
+		if (!GetExpressionTree(tree->CreateLeft(), postfix))
+			return false;
 	}
-	tokens->Pop_front();
-
-	return true;
+	else
+		tree->CreateLeft(left.GetContent());
 }
 
 bool Syntax::isVar(Token token) {

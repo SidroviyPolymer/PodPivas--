@@ -18,7 +18,7 @@ private:
 	int line;
 	int column;
 	std::string area = "undefined";
-
+	int val;
 public:
 	ID();
 	ID(std::string, Type);
@@ -26,6 +26,9 @@ public:
 
 	Type GetType();
 	void SetType(Type);
+
+	void SetVal(int);
+	int GetVal();
 
 	std::string GetArea();
 	void SetArea(std::string);

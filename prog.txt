@@ -14,6 +14,8 @@ begin
 _a := 5;
 _ab := 7;
 exit;
-_d := a * 5 - 3 + (_a div 5 + _b) * 7;
+
+_d := a - 5 div (_a + _b) *  7;
+
 end.
 
