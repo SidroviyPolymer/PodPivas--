@@ -20,7 +20,7 @@ int main() {
 		std::string fileSrc = "prog.txt";
 		List<Token>* tokens = new List<Token>();
 		List<ID>* ids = new List<ID>();
-		bool lxGood = lx->Process(tokens, ids, "../" + fileSrc, errlist);
+		bool lxGood = lx->Process(tokens, ids, fileSrc, errlist);
 		if (!lxGood) {
 			std::ofstream erros, tokos, idos;
 			erros.open("errors.log");
@@ -66,6 +66,9 @@ int main() {
 		idos.open("s_idos.log");
 		ids->PrintAllLn(idos);
 		idos.close();		
+
+		Generator* gen = new Generator(ids, syntaxTree);
+		gen->Working();
 	}
 	catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
