@@ -31,8 +31,8 @@ private:
 	bool SimpleOperator(Tree*, std::string, size_t);
 	bool AssigmentOperator(Tree*, std::string, size_t);
 	bool Expression(Tree*);
-	bool Term(Tree*);
-	bool Factor(Tree*);
+	bool GetPostfix(List<Token>*);
+	bool GetExpressionTree(Tree*, List<Token>*);
 	bool isVar(Token);
 
 	bool ExitOperator(Tree*, std::string, size_t);

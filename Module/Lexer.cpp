@@ -234,17 +234,8 @@ void Lexer::TokenList(bool& result) { // Функция заполнение л�
 			Terminal(elem,elempos);
 			prev = elem;
 			continue;
-		}			
-		if (elem[0] >= 'a' && elem[0] <= 'z' || elem[0] == '_') { // Если начинается с символа от a до z или _
-			if (isNegative) {
-				Operation(prev, prevpos);
-				isNegative = false;
-			}				
-			Id(elem,elempos);
-			prev = elem;
-			prevpos = elempos;
-			continue;
 		}
+
 		if (elem[0] == '-') {
 			if (prev != "" && ((prev[0] >= 'a' && prev[0] <= 'z' || prev[0] == '_') || (prev[0] >= '0' && prev[0] <= '9' || prev[0] == '$'))) {
 				Operation(elem, elempos);
@@ -259,8 +250,19 @@ void Lexer::TokenList(bool& result) { // Функция заполнение л�
 				continue;
 			}
 		}
+
 		if (operations.Contains(elem)) { // Если есть совпадения с оператарами
 			Operation(elem, elempos);
+			prev = elem;
+			prevpos = elempos;
+			continue;
+		}
+		if (elem[0] >= 'a' && elem[0] <= 'z' || elem[0] == '_') { // Если начинается с символа от a до z или _
+			if (isNegative) {
+				Operation(prev, prevpos);
+				isNegative = false;
+			}				
+			Id(elem,elempos);
 			prev = elem;
 			prevpos = elempos;
 			continue;
