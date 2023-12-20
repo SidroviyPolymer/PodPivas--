@@ -57,6 +57,7 @@ int main() {
 		Syntax* sx = new Syntax(tokens, ids, errlist);
 		bool sxGood = sx->Process();
 		if (!sxGood) {
+			errlist->PrintAllLn(std::cout);
 			return 0;
 		}
 

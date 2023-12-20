@@ -67,10 +67,8 @@ void Syntax::Program() {
 }
 
 bool Syntax::DefineName(Token& name, ID::Type type, std::string area) {
-	if (name.GetType() != Token::Type::Id) {
-		//Ошибка
+	if (name.GetType() != Token::Type::Id)
 		return false;
-	}
 
 	size_t idx = std::stoi(name.GetContent().substr(2));
 	ID& nameID = ids->At(idx);
@@ -78,6 +76,7 @@ bool Syntax::DefineName(Token& name, ID::Type type, std::string area) {
 	if (nameID.GetArea() != "undefined") {
 		if (nameID.GetArea() == area) {
 			//ОШИБКА: Повторное объявление
+			isGood = false;
 			return false;
 		}
 		ID newNameID = ID(nameID.GetContent(), type, name.GetPos().first, name.GetPos().second);
@@ -98,7 +97,7 @@ bool Syntax::Semicolon(Token semicolon) {
 }
 
 bool Syntax::Block(Tree* tree, std::string area) {
-	if (tokens->Length() == 0)
+	if (tokens->Length() == 0)		
 		return false;
 
 	Tree* definitions = tree->CreateLeft();
@@ -118,8 +117,9 @@ bool Syntax::Block(Tree* tree, std::string area) {
 	//<procedures_section>
 
 	//<operators_section>
-	if (OperatorsSection(operators, "OP", 1)) {
+	if (!OperatorsSection(operators, "OP", 1)) {
 		//Ошибка
+		isGood = false;
 		return false;
 	}
 
@@ -132,10 +132,9 @@ bool Syntax::ConstantSection(Tree* tree, std::string area) {
 
 	//const
 	Token _const = tokens->At(0);
-	if (_const.GetContent() != "const") {
-		//NULL
+	if (_const.GetContent() != "const")
 		return false;
-	}
+
 	tokens->Pop_front();
 
 	tree->SetData("const");	
@@ -144,6 +143,7 @@ bool Syntax::ConstantSection(Tree* tree, std::string area) {
 	//<definition_constant>
 	if (!DefinitionConstant(tree, area)) {
 		//Ошибка
+		isGood = false;
 		return false;
 	}	
 	
@@ -166,10 +166,9 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 
 	//<name>
 	Token name = tokens->At(0);
-	if (!DefineName(name, ID::Type::Const, area)) {
-		//ОШИБКА
+	if (!DefineName(name, ID::Type::Const, area))
 		return false;
-	}
+
 	tokens->Pop_front();
 	tree->SetData(name.GetContent());
 
@@ -177,20 +176,27 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 	Token equal = tokens->At(0);
 	if (equal.GetContent() != "=") {
 		//ОШИБКА
+		isGood = false;
 		return false;
 	}
 	tokens->Pop_front();
 
 	//<constant_expression>	
-	if (!ConstantExpression(tree->CreateLeft())) {
+	int val = 0; 
+	if (!ConstantExpression(tree->CreateLeft(), val)) {
 		//ОШИБКА
+		isGood = false;
 		return false;
 	}
+
+	size_t idx = std::stoi(name.GetContent().substr(2));
+	ids->At(idx).SetVal(val);
 
 	//;
 	Token semicolon = tokens->At(0);
 	if (!Semicolon(semicolon)) {
 		//Ошибка
+		isGood = false;
 		return false;
 	}
 	tokens->Pop_front();
@@ -198,115 +204,249 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 	return true;
 }
 
-bool Syntax::ConstantExpression(Tree* tree) {
+bool Syntax::ConstantExpression(Tree* tree, int& res) {
 	if (tokens->Length() == 0)
 		return false;
 
-	Tree* exprTree = new Tree();
-
-	//<consant_term>
-	if (!ConstantTerm(exprTree->CreateLeft())) {
-		//Ошибка
-		return false;
-	}
-
-	//+
-	Token lp_operator = tokens->At(0);
-	if (lp_operator.GetContent() != "+" && lp_operator.GetContent() != "-") {
-		Tree* tmp = new (tree) Tree(exprTree->GetLeft());
-		delete exprTree;
-		return true;
-	}		
-	tokens->Pop_front();
-	exprTree->SetData(lp_operator.GetContent());
-
-	//<constant_expression>
-	if (!ConstantExpression(exprTree->CreateRight())) {
-		//ОШИБКА
-		return false;
-	}
-
-	Tree* tmp = new (tree) Tree(exprTree);
-	delete exprTree;
-	return true;
-}
-
-bool Syntax::ConstantTerm(Tree* tree) {
-	if (tokens->Length() == 0)
+	List<Token>* postfix = new List<Token>();
+	if (!GetConstPostfix(postfix))
 		return false;
 
-	Tree* exprTree = new Tree();
+	List<int>* stack = new List<int>();
 
-	//<constant_factor>
-	if (!ConstantFactor(exprTree->CreateLeft())) {
-		//Ошибка
-		return false;
-	}
+	while (postfix->Length() != 0) {
+		Token token = postfix->Pop_front();
 
-	//(*, /, div, mod)
-	Token hp_operator = tokens->At(0);
-	if (hp_operator.GetContent() != "*" && hp_operator.GetContent() != "/" && hp_operator.GetContent() != "div" && hp_operator.GetContent() != "mod") {
-		Tree* tmp = new (tree) Tree(exprTree->GetLeft());
-		delete exprTree;
-		return true;
-	}		
-	tokens->Pop_front();
-	exprTree->SetData(hp_operator.GetContent());
-
-	//<constant_term>	
-	if (!ConstantTerm(exprTree->CreateRight())) {
-		//Ошибка
-		return false;
-	}
-
-	Tree* tmp = new (tree) Tree(exprTree);
-	delete exprTree;
-	return true;
-}
-
-bool Syntax::ConstantFactor(Tree* tree) {
-	if (tokens->Length() == 0)
-		return false;
-
-	//<constant>
-	Token constant = tokens->At(0);
-	if (Constant(constant)) {
-		if (constant.GetContent() == "-") {
-			tokens->Pop_front();
-			tree->SetData(constant.GetContent());
-			constant = tokens->Pop_front();
-			tree->CreateLeft()->SetData(constant.GetContent());
+		if (token.GetType() == Token::Type::Const) {
+			int value = std::stoi(token.GetContent());
+			stack->Push_front(value);
+			continue;
 		}
-		else {
-			tokens->Pop_front();
-			tree->SetData(constant.GetContent());
+
+		if (token.GetType() == Token::Type::Id && Constant(token)) {
+			size_t idx = std::stoi(token.GetContent().substr(2));
+			ID id = ids->At(idx);
+			std::string val = id.GetVal();
+			if (val == "undefined") {
+				Error err = Error("S0010", "Constant must be initialized", token.GetPos().first, token.GetPos().second);
+				errlist->Push_back(err);
+				return false;
+			}
+			int value = std::stoi(val);
+			stack->Push_front(value);
+			continue;
 		}
-		return true;
-	}
 
-	//(
-	Token open = tokens->At(0);
-	if (open.GetContent() != "(") {
-		//Ошибка
+		if (token.GetType() == Token::Type::Operation) {
+			std::string oper = token.GetContent();
+			int a = stack->Pop_front();
+			int b = stack->Pop_front();
+			if (oper == "+") {
+				int res = a + b;
+				stack->Push_front(res);
+			}
+			else if (oper == "-") {
+				int res = a - b;
+				stack->Push_front(res);
+			}
+			else if (oper == "*") {
+				int res = a * b;
+				stack->Push_front(res);
+			}
+			else if (oper == "div") {
+				int res = a / b;
+				stack->Push_front(res);
+			}
+			else if (oper == "mod") {
+				int res = a % b;
+				stack->Push_front(res);
+			}
+
+			continue;
+		}
+
 		return false;
 	}
-	tokens->Pop_front();
+	
+	res = stack->Pop_front();
+	tree->SetData(std::to_string(res));
 
-	//<constant_expression>
-	if (!ConstantExpression(tree)) {
-		//ОШИБКА
-		return false;
-	}
-
-	//)
-	Token close = tokens->At(0);
-	if (close.GetContent() != ")") {
-		//Ошибка
-		return false;
-	}
-	tokens->Pop_front();
+	delete stack;
+	delete postfix;
 
 	return true;
+}
+
+bool Syntax::GetConstPostfix(List<Token>* result) {
+	List<Token> stack;
+
+	bool exprExpected = true;
+	bool isNegative = false;
+
+	while (true) {
+		if (tokens->Length() == 0)
+			return false;
+
+		Token token = tokens->At(0);
+
+		if (token.GetContent() == "(") {
+			if (!exprExpected) {
+				//Ошибка
+				return false;
+			}
+
+			stack.Push_front(token);
+			tokens->Pop_front();
+			exprExpected = true;
+			continue;
+		}
+
+		if (token.GetContent() == "+" || token.GetContent() == "-") {
+			if (exprExpected) {
+				if (token.GetContent() == "-" && Constant(token)) {
+					Token tmp = Token("-1", Token::Type::Const);
+					result->Push_back(tmp);
+					tokens->Pop_front();
+					exprExpected = true;
+					isNegative = true;
+					continue;
+				}
+				//Ошибка
+				isGood = false;
+				return false;
+			}
+
+			if (isNegative) {
+				Token tmp = Token("*", Token::Type::Operation);
+				result->Push_back(tmp);
+				isNegative = false;
+			}
+
+			if (stack.Length() != 0) {
+				Token tmp = stack.At(0);
+				while (tmp.GetContent() != "(") {
+					tmp = stack.Pop_front();
+					result->Push_back(tmp);
+					if (stack.Length() == 0)
+						break;
+					tmp = stack.At(0);
+				}
+			}
+			stack.Push_front(token);
+			tokens->Pop_front();
+			exprExpected = true;
+			continue;
+		}
+
+		if (token.GetContent() == "*" || token.GetContent() == "div") {
+			if (exprExpected) {
+				//Ошибка
+				isGood = false;
+				return false;
+			}
+
+			if (isNegative) {
+				Token tmp = Token("*", Token::Type::Operation);
+				result->Push_back(tmp);
+				isNegative = false;
+			}
+
+			if (stack.Length() != 0) {
+				Token tmp = stack.At(0);
+				while (tmp.GetContent() != "(" && tmp.GetContent() != "+" && tmp.GetContent() != "-") {
+					tmp = stack.Pop_front();
+					result->Push_back(tmp);
+					if (stack.Length() == 0)
+						break;
+					tmp = stack.At(0);
+				}
+			}
+			stack.Push_front(token);
+			tokens->Pop_front();
+			exprExpected = true;
+			continue;
+		}
+
+		if (token.GetContent() == ")") {
+			if (exprExpected) {
+				//Ошибка
+				isGood = false;
+				return false;
+			}
+
+			if (isNegative) {
+				Token tmp = Token("*", Token::Type::Operation);
+				result->Push_back(tmp);
+				isNegative = false;
+			}
+
+			if (stack.Length() != 0) {
+				Token tmp = stack.At(0);
+				if (tmp.GetContent() == "(") {
+					//Ошибка
+					isGood = false;
+					return false;
+				}
+				while (tmp.GetContent() != "(") {
+					tmp = stack.Pop_front();
+					result->Push_back(tmp);
+					if (stack.Length() == 0 && tmp.GetContent() != ")") {
+						//Ошибка
+						isGood = false;
+						return false;
+					}
+					tmp = stack.At(0);
+				}
+			}
+			stack.Pop_front();
+			tokens->Pop_front();
+			continue;
+		}
+
+		if (Constant(token)) {
+			if (!exprExpected) {
+				//Ошибка
+				isGood = false;
+				return false;
+			}
+
+			result->Push_back(token);
+			tokens->Pop_front();
+			exprExpected = false;
+			continue;
+		}
+
+		if (token.GetContent() == ";") {
+			while (stack.Length() != 0) {
+				Token tmp = stack.Pop_front();
+				if (tmp.GetContent() == "(") {
+					//Ошибка
+					isGood = false;
+					return false;
+				}
+
+				result->Push_back(tmp);
+			}
+
+			if (isNegative) {
+				Token tmp = Token("*", Token::Type::Operation);
+				result->Push_back(tmp);
+				isNegative = false;
+			}
+
+			if (result->Length() == 0) {
+				//Ошибка
+				isGood = false;
+				return false;
+			}
+
+			return true;
+		}
+
+		//Ошибка
+		isGood = false;
+		return false;
+	}
 }
 
 bool Syntax::Constant(Token constant) {
@@ -324,7 +464,7 @@ bool Syntax::Constant(Token constant) {
 	if (constant.GetContent() == "-" || constant.GetContent() == "+") {
 		return Constant(tokens->At(1));
 	}
-	//Ошибка
+
 	return false;
 }
 
@@ -346,6 +486,7 @@ bool Syntax::VariableSection(Tree* tree, std::string area) {
 	size_t DSidx = 0;
 	if (!DescriptionSimilarVar(DStree, area, DSidx++)) {
 		//Ошибка
+		isGood = false;
 		return false;
 	}
 
@@ -353,6 +494,7 @@ bool Syntax::VariableSection(Tree* tree, std::string area) {
 	Token semicolon = tokens->At(0);
 	if (!Semicolon(semicolon)) {
 		//Ошибка
+		isGood = false;
 		return false;
 	}
 	tokens->Pop_front();
@@ -365,6 +507,7 @@ bool Syntax::VariableSection(Tree* tree, std::string area) {
 		Token semicolon = tokens->At(0);
 		if (!Semicolon(semicolon)) {
 			//Ошибка
+			isGood = false;
 			return false;
 		}
 		tokens->Pop_front();
@@ -386,10 +529,9 @@ bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area, size_t idx) {
 
 	//name
 	Token name = tokens->At(0);
-	if (!DefineName(name, ID::Type::Var, area)) {
-		//Ошибка
+	if (!DefineName(name, ID::Type::Var, area))
 		return false;
-	}
+
 	tokens->Pop_front();
 	tree->SetData(name.GetContent());
 
@@ -402,6 +544,7 @@ bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area, size_t idx) {
 		Token name = tokens->At(0);
 		if (!DefineName(name, ID::Type::Var, area)) {
 			//Ошибка
+			isGood = false;
 			return false;
 		}
 		tokens->Pop_front();
@@ -417,6 +560,7 @@ bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area, size_t idx) {
 	Token colon = tokens->At(0);
 	if (colon.GetContent() != ":") {
 		//Ошибка
+		isGood = false;
 		return false;
 	}
 	tokens->Pop_front();
@@ -425,6 +569,7 @@ bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area, size_t idx) {
 	Token integer = tokens->At(0);
 	if (integer.GetContent() != "integer") {
 		//Ошибка
+		isGood = false;
 		return false;
 	}
 	tokens->Pop_front();
@@ -445,6 +590,7 @@ bool Syntax::CompoundOperator(Tree* tree, std::string label, size_t idx) {
 	Token _begin = tokens->At(0);
 	if (_begin.GetContent() != "begin") {
 		//Ошибка
+		isGood = false;
 		return false;
 	}		
 	tokens->Pop_front();
@@ -469,6 +615,7 @@ bool Syntax::CompoundOperator(Tree* tree, std::string label, size_t idx) {
 	Token end = tokens->At(0);
 	if (end.GetContent() != "end") {
 		//Ошибка
+		isGood = false;
 		return false;
 	}
 	tokens->Pop_front();
@@ -516,6 +663,7 @@ bool Syntax::AssigmentOperator(Tree* tree, std::string label, size_t idx) {
 	Token assign = tokens->At(0);
 	if (assign.GetContent() != ":=") {
 		//Ошибка
+		isGood = false;
 		return false;
 	}
 	tokens->Pop_front();
@@ -524,6 +672,7 @@ bool Syntax::AssigmentOperator(Tree* tree, std::string label, size_t idx) {
 	Tree* exprTree = new Tree();
 	if (!Expression(exprTree)) {
 		//Ошибка
+		isGood = false;
 		return false;
 	}
 
@@ -557,6 +706,7 @@ bool Syntax::GetPostfix(List<Token>* result) {
 	List<Token> stack;
 
 	bool exprExpected = true;
+	bool isNegative = false;
 
 	while (true) {
 		if (tokens->Length() == 0)
@@ -578,8 +728,23 @@ bool Syntax::GetPostfix(List<Token>* result) {
 
 		if (token.GetContent() == "+" || token.GetContent() == "-") {
 			if (exprExpected) {
+				if (token.GetContent() == "-" && Constant(token)) {
+					Token tmp = Token("-1", Token::Type::Const);
+					result->Push_back(tmp);
+					tokens->Pop_front();
+					exprExpected = true;
+					isNegative = true;
+					continue;
+				}
 				//Ошибка
+				isGood = false;
 				return false;
+			}
+
+			if (isNegative) {
+				Token tmp = Token("*", Token::Type::Operation);
+				result->Push_back(tmp);
+				isNegative = false;
 			}
 
 			if (stack.Length() != 0) {
@@ -601,7 +766,14 @@ bool Syntax::GetPostfix(List<Token>* result) {
 		if (token.GetContent() == "*" || token.GetContent() == "div") {
 			if (exprExpected) {
 				//Ошибка
+				isGood = false;
 				return false;
+			}
+
+			if (isNegative) {
+				Token tmp = Token("*", Token::Type::Operation);
+				result->Push_back(tmp);
+				isNegative = false;
 			}
 
 			if (stack.Length() != 0) {
@@ -623,13 +795,21 @@ bool Syntax::GetPostfix(List<Token>* result) {
 		if (token.GetContent() == ")") {
 			if (exprExpected) {
 				//Ошибка
+				isGood = false;
 				return false;
+			}
+
+			if (isNegative) {
+				Token tmp = Token("*", Token::Type::Operation);
+				result->Push_back(tmp);
+				isNegative = false;
 			}
 
 			if (stack.Length() != 0) {
 				Token tmp = stack.At(0);
 				if (tmp.GetContent() == "(") {
 					//Ошибка
+					isGood = false;
 					return false;
 				}
 				while (tmp.GetContent() != "(") {
@@ -637,8 +817,9 @@ bool Syntax::GetPostfix(List<Token>* result) {
 					result->Push_back(tmp);
 					if (stack.Length() == 0 && tmp.GetContent() != ")") {
 						//Ошибка
+						isGood = false;
 						return false;
-					}						
+					}
 					tmp = stack.At(0);
 				}
 			}
@@ -647,9 +828,10 @@ bool Syntax::GetPostfix(List<Token>* result) {
 			continue;
 		}
 
-		if (isVar(token) || Constant(token)) {
+		if (Constant(token) || isVar(token)) {
 			if (!exprExpected) {
 				//Ошибка
+				isGood = false;
 				return false;
 			}
 
@@ -659,26 +841,35 @@ bool Syntax::GetPostfix(List<Token>* result) {
 			continue;
 		}
 
-		if (token.GetContent() == ";" || token.GetContent() == "end") {
+		if (token.GetContent() == ";") {
 			while (stack.Length() != 0) {
 				Token tmp = stack.Pop_front();
 				if (tmp.GetContent() == "(") {
 					//Ошибка
+					isGood = false;
 					return false;
 				}
 
 				result->Push_back(tmp);
 			}
 
+			if (isNegative) {
+				Token tmp = Token("*", Token::Type::Operation);
+				result->Push_back(tmp);
+				isNegative = false;
+			}
+
 			if (result->Length() == 0) {
 				//Ошибка
+				isGood = false;
 				return false;
 			}
 
 			return true;
-		}			
+		}
 
 		//Ошибка
+		isGood = false;
 		return false;
 	}
 }
@@ -693,6 +884,7 @@ bool Syntax::GetExpressionTree(Tree* tree, List<Token>* postfix) {
 
 	if (_first.GetType() != Token::Type::Operation) {
 		//Ошибка
+		isGood = false;
 		return false;
 	}
 
@@ -717,6 +909,8 @@ bool Syntax::GetExpressionTree(Tree* tree, List<Token>* postfix) {
 	}
 	else
 		tree->CreateLeft(left.GetContent());
+
+	return true;
 }
 
 bool Syntax::isVar(Token token) {
