@@ -16,9 +16,8 @@ private:
 
 	bool ConstantSection(Tree*, std::string);
 	bool DefinitionConstant(Tree*, std::string);
-	bool ConstantExpression(Tree*);
-	bool ConstantTerm(Tree*);
-	bool ConstantFactor(Tree*);
+	bool ConstantExpression(Tree*, int&);
+	bool GetConstPostfix(List<Token>*);
 	bool Constant(Token);
 
 	bool VariableSection(Tree*, std::string);
@@ -35,8 +34,11 @@ private:
 	bool GetExpressionTree(Tree*, List<Token>*);
 	bool isVar(Token);
 
+	bool ComplexOperator(Tree*, std::string, size_t);
+
 	bool ExitOperator(Tree*, std::string, size_t);
 
+	bool Null(Tree* tree, std::string label, size_t idx);
 	void NULLOP(Tree*, std::string, size_t);
 
 	Tree* syntaxTree;

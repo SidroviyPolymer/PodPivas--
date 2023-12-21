@@ -2,8 +2,8 @@ program PROG;
 
 const
 	a = 5;
-	b = 9;
-	c = 6;
+	b = -a;
+	c = (a + b) * a;
 
 var
 	_a : integer;
@@ -14,8 +14,8 @@ begin
 _a := 5;
 _ab := 7;
 exit;
-
+begin
 _d := a - 5 div (_a + _b) *  7;
-
+end
 end.
 
