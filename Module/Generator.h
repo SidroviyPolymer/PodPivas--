@@ -16,6 +16,8 @@ private:
 	void VariableProcess(Tree* tree);
 	void Operator(Tree* tree);
 	void OperatorProcess(Tree* tree);
+	void Procedure(Tree* tree);
+	void ProcedureProcess(Tree* tree);
 	void Process(Tree* tree);
 	void Start();
 	void TreeTraversal(Tree* tree);
@@ -23,6 +25,7 @@ private:
 	Tree* _const;
 	Tree* _var;
 	Tree* _code;
+	Tree* _procedure;
 	std::string _name;
 	bool exit_flag = 0;
 public:

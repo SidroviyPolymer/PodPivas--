@@ -31,6 +31,7 @@ void Generator::Process(Tree* tree)
 	}
 	if (data == "const") _const = tree->GetLeft();
 	if (data == "var") _var = tree->GetLeft(); 
+	if (data == "procedure") _procedure = tree->GetLeft();
 }
 
 void Generator::Constant(Tree* tree)
@@ -102,6 +103,7 @@ void Generator::OperatorProcess(Tree* tree)
 			{
 				int index = stoi(tree->GetLeft()->GetData().substr(2));
 				cout << "pop AX" << endl;
+				cout << "pop BX" << endl;
 				cout << "mov " << ids->At(index).GetContent() << ", AX" << endl;
 			}
 			if (tree->GetData() == "-")
@@ -134,6 +136,18 @@ void Generator::OperatorProcess(Tree* tree)
 	}
 }
 
+void Generator::Procedure(Tree* tree)		//нужно подумать о порядке обхода
+{
+	if (tree->GetLeft() != nullptr) Procedure(tree->GetLeft());
+	if (tree->GetRight() != nullptr) Procedure(tree->GetRight());
+	ProcedureProcess(tree);
+}
+
+void Generator::ProcedureProcess(Tree* tree)	//наверное нужно работать как с основной прогой
+{
+
+}
+
 void Generator::Start()
 {
 	cout << ".model tiny" << endl;
@@ -146,6 +160,7 @@ void Generator::Finish()
 {
 	if (_const != nullptr) Constant(_const);
 	if (_var != nullptr) Variable(_var);
+	if (_procedure != nullptr) Procedure(_procedure);
 	cout << ".code" << endl;		
 	cout << _name << ":" << endl;
 	cout << "mov ax, @Data" << endl;
