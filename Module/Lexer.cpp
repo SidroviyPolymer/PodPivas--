@@ -139,15 +139,15 @@ void Lexer::Parse() {
 		if (tmp == ':' || tmp == ',' || tmp == ';' || tmp == '(' || tmp == ')' || tmp == '+' || tmp == '-' || tmp == '*' || tmp == '.') { // Если встретили терминальный символ,а не коммент
 			if (word != "") {
 				flow->Push_back(word);
-				Pos* buf = new Pos(line, column - word.length());
-				flow2->Push_back(*buf);
+				Pos buf = Pos(line, column - word.length());
+				flow2->Push_back(buf);
 			}
 
 			word = tmp;
 			if (word != ":" && word != "(") {
 				flow->Push_back(word);
-				Pos* buf2 = new Pos(line, column);
-				flow2->Push_back(*buf2);
+				Pos buf2 = Pos(line, column);
+				flow2->Push_back(buf2);
 				word = "";
 			}	
 
@@ -158,8 +158,8 @@ void Lexer::Parse() {
 
 		if (!isBegin && prev == '(') { // Если прошлый символ  '(' не часть коммента, то считаем его отдельным токеном
 			flow->Push_back(word);
-			Pos* buf2 = new Pos(line, column-1);
-			flow2->Push_back(*buf2);
+			Pos buf2 = Pos(line, column-1);
+			flow2->Push_back(buf2);
 			word = "";
 		}
 
@@ -167,25 +167,43 @@ void Lexer::Parse() {
 			if (tmp == '=') { // Если нынешний символ  '=' и образует ":=" то это целый токен, помещаем его
 				word += '=';
 				flow->Push_back(word);
-				Pos* buf2 = new Pos(line, column - 2);
-				flow2->Push_back(*buf2);
+				Pos buf2 = Pos(line, column - 2);
+				flow2->Push_back(buf2);
 				prev = tmp;
 				word = "";
 				continue;
 			}
 			else { // Если нынешний символ не '=', то считаем ':' отдельным токеном
 				flow->Push_back(word);
-				Pos* buf2 = new Pos(line, column - 1);
-				flow2->Push_back(*buf2);
+				Pos buf2 = Pos(line, column - 1);
+				flow2->Push_back(buf2);
 				word = ""; 
 			}
+		}
+
+		if (tmp == '=') {
+			if (word != "") {
+				flow->Push_back(word);
+				Pos buf = Pos(line, column - word.length());
+				flow2->Push_back(buf);
+			}
+
+			word = tmp;
+			flow->Push_back(word);
+			Pos buf2 = Pos(line, column);
+			flow2->Push_back(buf2);
+			word = "";
+
+			prev = tmp;
+			isBegin = false;
+			continue;
 		}
 
 		if (tmp == '\n' || tmp == ' ' || tmp == '\t') { //Если слово закончилось, то помещаем в предварительный список токенов и позиций
 			if (word != "") { // Если не пустое
 				flow->Push_back(word);
-				Pos* buf = new Pos(line, column - word.length());
-				flow2->Push_back(*buf);
+				Pos buf = Pos(line, column - word.length());
+				flow2->Push_back(buf);
 				word = "";
 			}	
 			if (tmp == '\n') { // Если конец строки, то счётчик строк++, столбцов обнуляется 
@@ -204,8 +222,8 @@ void Lexer::Parse() {
 
 		if (word == "end.") { // Если end. , то прекраща
 			flow->Push_back(word);
-			Pos* buf = new Pos(line, column + 1 - word.length());
-			flow2->Push_back(*buf);
+			Pos buf = Pos(line, column + 1 - word.length());
+			flow2->Push_back(buf);
 			break;
 		}
 

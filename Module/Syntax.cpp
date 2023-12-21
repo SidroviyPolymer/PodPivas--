@@ -588,23 +588,25 @@ bool Syntax::CompoundOperator(Tree* tree, std::string label, size_t idx) {
 
 	//begin	
 	Token _begin = tokens->At(0);
-	if (_begin.GetContent() != "begin") {
-		//Îøèáêà
-		isGood = false;
+	if (_begin.GetContent() != "begin")
 		return false;
-	}		
+	
 	tokens->Pop_front();
 
 	//operator
-	if(Operator(tree, label, idx))
+	if (Operator(tree, label, idx)) {
 		tree = tree->CreateRight();
+		++idx;
+	}		
 
 	//[{; <operator>}]	
 	Token semicolon = tokens->At(0);	
 	while (semicolon.GetContent() == ";") {
 		tokens->Pop_front();		
-		if (Operator(tree, label, ++idx))
+		if (Operator(tree, label, idx)) {
 			tree = tree->CreateRight();
+			++idx;
+		}			
 		semicolon = tokens->At(0);
 	}
 
@@ -625,14 +627,13 @@ bool Syntax::CompoundOperator(Tree* tree, std::string label, size_t idx) {
 
 bool Syntax::Operator(Tree* tree, std::string label, size_t idx) {
 	//<simple operator>
-
 	if (SimpleOperator(tree, label, idx))
 		return true;
 
 	//<complex operator>	
-	//if (ComplexOperator(label + std::to_string(idx) + "_", 1)) {
-	//
-	//}
+	if (ComplexOperator(tree, label, idx))
+		return true;
+
 	return false;
 }
 
@@ -648,6 +649,8 @@ bool Syntax::SimpleOperator(Tree* tree, std::string label, size_t idx) {
 		return true;
 
 	//<null_operator>
+	if (Null(tree, label, idx))
+		return true;
 
 	return false;
 }
@@ -922,6 +925,17 @@ bool Syntax::isVar(Token token) {
 	return false;
 }
 
+bool Syntax::ComplexOperator(Tree* tree, std::string label, size_t idx) {
+	tree->SetData(label + std::to_string(idx));
+
+	if (CompoundOperator(tree->CreateLeft(), label + std::to_string(idx) + "_", 1))
+		return true;
+
+	tree->SetLeft(nullptr);	
+
+	return false;
+}
+
 bool Syntax::ExitOperator(Tree* tree, std::string label, size_t idx) {
 	Token exit = tokens->At(0);
 	if (exit.GetContent() != "exit") {
@@ -933,6 +947,16 @@ bool Syntax::ExitOperator(Tree* tree, std::string label, size_t idx) {
 	tree = tree->CreateLeft();
 	tree->SetData("exit");
 
+	return true;
+}
+
+bool Syntax::Null(Tree* tree, std::string label, size_t idx) {
+	Token token = tokens->At(0);
+	if (token.GetContent() != "null")
+		return false;
+
+	tokens->Pop_front();
+	NULLOP(tree, label, idx);
 	return true;
 }
 

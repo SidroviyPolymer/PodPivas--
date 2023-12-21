@@ -34,8 +34,11 @@ private:
 	bool GetExpressionTree(Tree*, List<Token>*);
 	bool isVar(Token);
 
+	bool ComplexOperator(Tree*, std::string, size_t);
+
 	bool ExitOperator(Tree*, std::string, size_t);
 
+	bool Null(Tree* tree, std::string label, size_t idx);
 	void NULLOP(Tree*, std::string, size_t);
 
 	Tree* syntaxTree;
