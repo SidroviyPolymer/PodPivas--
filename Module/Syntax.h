@@ -12,40 +12,45 @@ private:
 	bool DefineName(Token&, ID::Type, std::string);
 	bool Semicolon(Token);
 
-	bool Block(Tree*, std::string);
+	bool Block(Tree*, std::string, std::string);
 
 	bool ConstantSection(Tree*, std::string);
 	bool DefinitionConstant(Tree*, std::string);
-	bool ConstantExpression(Tree*, int&);
-	bool GetConstPostfix(List<Token>*);
+	bool ConstantExpression(Tree*, std::string, int&);
+	bool GetConstPostfix(List<Token>*, std::string);
 	bool Constant(Token);
 
 	bool VariableSection(Tree*, std::string);
 	bool DescriptionSimilarVar(Tree*, std::string, size_t);
 
-	bool OperatorsSection(Tree*, std::string, size_t);
-	bool CompoundOperator(Tree*, std::string, size_t);
-	bool Operator(Tree*, std::string, size_t);
+	bool ProcedureSection(Tree*, std::string);
+	bool isProcedure(Token);
 
-	bool SimpleOperator(Tree*, std::string, size_t);
-	bool AssigmentOperator(Tree*, std::string, size_t);
-	bool Expression(Tree*);
-	bool GetPostfix(List<Token>*);
+	bool OperatorsSection(Tree*, std::string, std::string, size_t);
+	bool CompoundOperator(Tree*, std::string, std::string, size_t);
+	bool Operator(Tree*, std::string, std::string, size_t);
+
+	bool SimpleOperator(Tree*, std::string, std::string, size_t);
+	bool AssigmentOperator(Tree*, std::string, std::string, size_t);
+	bool Expression(Tree*, std::string);
+	bool GetPostfix(List<Token>*, std::string);
 	bool GetExpressionTree(Tree*, List<Token>*);
 	bool isVar(Token);
 
-	bool ComplexOperator(Tree*, std::string, size_t);
+	bool ComplexOperator(Tree*, std::string, std::string, size_t);
 
 	bool ExitOperator(Tree*, std::string, size_t);
 
 	bool Null(Tree* tree, std::string label, size_t idx);
 	void NULLOP(Tree*, std::string, size_t);
+	
+	bool CheckArea(Token&, std::string);
 
 	Tree* syntaxTree;
 
 	List<Token>* tokens;
 	List<ID>* ids;
-	List<Error>* errlist;
+	List<Error>* errlist;	
 
 	bool isGood = true;
 public:
