@@ -63,7 +63,7 @@ void Generator::VariableProcess(Tree* tree)
 	if (tree->GetData().substr(0, 2) == "id")
 	{
 		int index = stoi(tree->GetData().substr(2));
-		cout << ids->At(index).GetContent() << " dd " << "?" << endl;
+		cout << ids->At(index).GetContent() << " dw " << "?" << endl;
 	}
 }
 
@@ -99,7 +99,7 @@ void Generator::OperatorProcess(Tree* tree)
 				cout << "mul BX" << endl;
 				cout << "push AX" << endl;
 			}
-			if (tree->GetData() == ":=")
+			if (tree->GetData() == ":=")		//pop id
 			{
 				int index = stoi(tree->GetLeft()->GetData().substr(2));
 				cout << "pop AX" << endl;
@@ -136,7 +136,12 @@ void Generator::OperatorProcess(Tree* tree)
 	}
 }
 
-void Generator::Procedure(Tree* tree)		//нужно подумать о порядке обхода
+void Generator::ProcedureTreeTraversal(Tree* tree)		
+{
+	
+}
+
+void Generator::Procedure(Tree* tree)	//нужно подумать о порядке обхода
 {
 	if (tree->GetLeft() != nullptr) Procedure(tree->GetLeft());
 	if (tree->GetRight() != nullptr) Procedure(tree->GetRight());
@@ -160,7 +165,7 @@ void Generator::Finish()
 {
 	if (_const != nullptr) Constant(_const);
 	if (_var != nullptr) Variable(_var);
-	if (_procedure != nullptr) Procedure(_procedure);
+	if (_procedure != nullptr) ProcedureTreeTraversal(_procedure);
 	cout << ".code" << endl;		
 	cout << _name << ":" << endl;
 	cout << "mov ax, @Data" << endl;

@@ -1,31 +1,20 @@
 program PROG;
 
-<<<<<<< Updated upstream
 const
 	a = 5;
 	b = -a;
 	c = (a + b) * a;
 
-=======
->>>>>>> Stashed changes
 var
-	a : integer;
-	b : integer;
-	c : integer;
+	_a : integer;
+	_ab, _b : integer;
+	_d, _e, ff, gg : integer;
+
 begin
-<<<<<<< Updated upstream
 _a := 5;
 _ab := 7;
-exit;
 begin
 _d := a - 5 div (_a + _b) *  7;
 end
-=======
-	a := 5;
-	b := 9;
-	c := 6;
-	c := c * c * c;
-	b := b div b;
->>>>>>> Stashed changes
 end.
 

@@ -16,6 +16,7 @@ private:
 	void VariableProcess(Tree* tree);
 	void Operator(Tree* tree);
 	void OperatorProcess(Tree* tree);
+	void ProcedureTreeTraversal(Tree* tree);
 	void Procedure(Tree* tree);
 	void ProcedureProcess(Tree* tree);
 	void Process(Tree* tree);
