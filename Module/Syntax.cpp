@@ -113,6 +113,8 @@ bool Syntax::Block(Tree* tree, std::string label, std::string area) {
 	if (VariableSection(definitions, area))
 		definitions = definitions->CreateRight();
 
+	//tree->Print();
+
 	//<procedures_section>
 	ProcedureSection(definitions, area);
 
@@ -170,11 +172,8 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 	if (!DefineName(name, ID::Type::Const, area))
 		return false;
 
-	if (!CheckArea(name, area))
-		return false;
 	tokens->Pop_front();
 
-	tokens->Pop_front();
 	tree->SetData(name.GetContent());
 
 	//=
@@ -415,7 +414,7 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 				return false;
 			}
 
-			if (!CheckArea(token, area))
+			if (token.GetType() == Token::Type::Id && !CheckArea(token, area))
 				return false;
 
 			result->Push_back(token);
@@ -482,12 +481,8 @@ bool Syntax::VariableSection(Tree* tree, std::string area) {
 
 	//var
 	Token var = tokens->At(0);
-	if (var.GetContent() != "var") {
+	if (var.GetContent() != "var")
 		return false;
-	}
-	if (!CheckArea(var, area))
-		return false;
-
 	tokens->Pop_front();
 
 	tree->SetData("var");
@@ -542,8 +537,6 @@ bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area, size_t idx) {
 	Token name = tokens->At(0);
 	if (!DefineName(name, ID::Type::Var, area))
 		return false;
-	if (!CheckArea(name, area))
-		return false;
 
 	tokens->Pop_front();
 	tree->SetData(name.GetContent());
@@ -592,29 +585,46 @@ bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area, size_t idx) {
 
 bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 	if (tokens->Length() == 0)
-		return;
+		return false;
+
+	size_t procIdx = 1;
 
 	Token procedure = tokens->At(0);
+	if (procedure.GetContent() != "procedure")
+		return false;
+
+	tree->SetData("procedure");
+	tree = tree->CreateLeft();
+
 	while (procedure.GetContent() == "procedure") {
 		tokens->Pop_front();
 
+		tree->SetData("PR" + std::to_string(procIdx));
+		Tree* procTree = tree->CreateLeft();
+
 		//id
 		Token name = tokens->At(0);
-		if (!isProcedure(name))
+		if (!DefineName(name, ID::Type::Proc, area))
 			return false;
 
-		if (!CheckArea(name, area))
-			return false;
 		tokens->Pop_front();
+		procTree->SetData(name.GetContent());
 
 		//(
 		Token bracket = tokens->At(0);
 		if (bracket.GetContent() == "(") {
-			//[param]
+			tokens->Pop_front();
+			//[param]			
 
 			//)
-		}
-		
+			bracket = tokens->At(0);
+			if (bracket.GetContent() != ")") {
+				//Îøèáêà
+				isGood = false;
+				return false;
+			}
+		}		
+
 		//;
 		Token semicolon = tokens->At(0);
 		if (!Semicolon(semicolon)) {
@@ -622,24 +632,33 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 			isGood = false;
 			return false;
 		}			
+		tokens->Pop_front();
 
 		//block      label pr[idx]_op or
-		std::string label = area + "_PROC";		
+		std::string label = (area == "global" ? "" : area + "_") + "PROC" + std::to_string(procIdx++);
+		std::string nodeName = "block";
 
-		if (!Block(tree, name.GetContent(), label)) {
+		if (!Block(procTree->CreateRight(nodeName), label + "_OP", label)) {
 			//Îøèáêà
 			isGood = false;
 			return false;
 		}
 
 		//;
-		Token semicolon = tokens->At(0);
+		semicolon = tokens->At(0);
 		if (!Semicolon(semicolon)) {
 			//Îøèáêà
 			isGood = false;
 			return false;
 		}
-	}
+		tokens->Pop_front();
+
+		procedure = tokens->At(0);
+		if (procedure.GetContent() == "procedure")
+			tree = tree->CreateRight();		
+	}	
+
+	return true;
 }
 
 bool Syntax::isProcedure(Token token) {
@@ -916,7 +935,7 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 				return false;
 			}
 
-			if (!CheckArea(token, area))
+			if (token.GetType() == Token::Type::Id && !CheckArea(token, area))
 				return false;
 
 			result->Push_back(token);
@@ -1002,7 +1021,7 @@ bool Syntax::isVar(Token token) {
 		size_t idx = std::stoi(token.GetContent().substr(2));
 		ID id = ids->At(idx);
 		
-		return id.GetType() != ID::Type::Var;
+		return id.GetType() == ID::Type::Var;
 	}
 	return false;
 }
@@ -1055,9 +1074,8 @@ bool Syntax::CheckArea(Token& token, std::string area) {
 	if (id.GetArea() == area)
 		return true;
 
-	ID expected = ID(id.GetContent(), id.GetType(), id.GetPos().first, id.GetPos().second);
+	ID expected = ID(id.GetContent(), id.GetType(), token.GetPos().first, token.GetPos().second);
 	expected.SetArea(area);
-	expected.SetVal(std::stoi(id.GetVal()));
 
 	int newIdx = ids->Find(expected);
 	if (newIdx > 0) {
