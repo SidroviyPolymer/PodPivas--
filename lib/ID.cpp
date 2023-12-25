@@ -33,7 +33,7 @@ void ID::SetPos(int line, int column) {
 }
 
 bool ID::operator==(ID const& id) {
-	return id.content == content;
+	return (id.content == content) && (id.area == area);
 }
 
 std::ostream& operator<<(std::ostream& os, const ID& data) {

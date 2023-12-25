@@ -10,6 +10,12 @@ var
 	_ab, _b : integer;
 	_d, _e, ff, gg : integer;
 
+procedure foo;
+var _a : integer;
+begin
+_a := 7;
+end;
+
 begin
 _a := 5;
 _ab := 7;
