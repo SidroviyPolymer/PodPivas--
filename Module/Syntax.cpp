@@ -587,7 +587,7 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 	if (tokens->Length() == 0)
 		return false;
 
-	size_t procIdx = 1;
+	size_t procIdx = 0;
 
 	Token procedure = tokens->At(0);
 	if (procedure.GetContent() != "procedure")
@@ -597,14 +597,16 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 	tree = tree->CreateLeft();
 
 	while (procedure.GetContent() == "procedure") {
+		std::string _area = (area == "global" ? "" : area + "_") + "PROC" + std::to_string(procIdx++);
+
 		tokens->Pop_front();
 
-		tree->SetData("PR" + std::to_string(procIdx));
+		tree->SetData("PR" + std::to_string(procIdx - 1));
 		Tree* procTree = tree->CreateLeft();
 
 		//id
 		Token name = tokens->At(0);
-		if (!DefineName(name, ID::Type::Proc, area))
+		if (!DefineName(name, ID::Type::Proc, _area))
 			return false;
 
 		tokens->Pop_front();
@@ -615,6 +617,7 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 		if (bracket.GetContent() == "(") {
 			tokens->Pop_front();
 			//[param]			
+			ParamSection(procTree->CreateLeft(), _area);
 
 			//)
 			bracket = tokens->At(0);
@@ -623,6 +626,7 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 				isGood = false;
 				return false;
 			}
+			tokens->Pop_front();
 		}		
 
 		//;
@@ -634,11 +638,10 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 		}			
 		tokens->Pop_front();
 
-		//block      label pr[idx]_op or
-		std::string label = (area == "global" ? "" : area + "_") + "PROC" + std::to_string(procIdx++);
+		//block      label pr[idx]_op or		
 		std::string nodeName = "block";
 
-		if (!Block(procTree->CreateRight(nodeName), label + "_OP", label)) {
+		if (!Block(procTree->CreateRight(nodeName), _area + "_OP", _area)) {
 			//Îøèáêà
 			isGood = false;
 			return false;
@@ -658,6 +661,102 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 			tree = tree->CreateRight();		
 	}	
 
+	return true;
+}
+
+bool Syntax::ParamSection(Tree* tree, std::string area) {
+	//<description>
+	if (!ParamDescription(tree, area))
+		return false;
+
+	//[; <description>]
+	Token semicolon = tokens->At(0);
+	while (Semicolon(semicolon)) {
+		tokens->Pop_front();
+		tree = tree->CreateRight();
+		if (!ParamDescription(tree, area))
+			return false;
+
+		semicolon = tokens->At(0);
+	}
+
+	return true;
+}
+
+bool Syntax::ParamDescription(Tree* tree, std::string area) {
+	//[(var, const)]
+	Token var = tokens->At(0);
+	ID::Type type = ID::Type::Var;
+	if (var.GetContent() == "var") {
+		tokens->Pop_front();
+		tree->SetData("var-param");		
+	}		
+	else if (var.GetContent() == "const") {
+		tokens->Pop_front();
+		tree->SetData("const-param");
+		type = ID::Type::Const;
+	}		
+	else
+		tree->SetData("param");
+
+	tree = tree->CreateLeft();
+
+	//name	
+	Token name = tokens->At(0);
+
+	if (name.GetType() != Token::Type::Id)
+		return false;
+
+	if (!DefineName(name, type, area)) {
+		//Îøèáêà
+		isGood = false;
+		return false;
+	}		
+
+	tokens->Pop_front();
+	tree->SetData(name.GetContent());
+
+	//[, name]
+	Token comma = tokens->At(0);
+	while (comma.GetContent() == ",") {
+		tokens->Pop_front();
+		name = tokens->At(0);
+		tree = tree->CreateRight();
+
+		if (name.GetType() != Token::Type::Id) {
+			//Îøèáêà
+			isGood = false;
+			return false;
+		}			
+
+		if (!DefineName(name, type, area)) {
+			//Îøèáêà
+			isGood = false;
+			return false;
+		}
+
+		tokens->Pop_front();
+		tree->SetData(name.GetContent());
+		comma = tokens->At(0);
+	}	
+
+	//:
+	Token colon = tokens->At(0);
+	if (colon.GetContent() != ":") {
+		//Îøèáêà
+		isGood = false;
+		return false;
+	}
+	tokens->Pop_front();
+
+	Token integer = tokens->At(0);
+	if (integer.GetContent() != "integer") {
+		//Îøèáêà
+		isGood = false;
+		return false;
+	}
+	tokens->Pop_front();
+	//integer
 	return true;
 }
 
