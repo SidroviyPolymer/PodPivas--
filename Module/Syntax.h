@@ -24,6 +24,8 @@ private:
 	bool DescriptionSimilarVar(Tree*, std::string, size_t);
 
 	bool ProcedureSection(Tree*, std::string);
+	bool ParamSection(Tree*, std::string);
+	bool ParamDescription(Tree*, std::string);
 	bool isProcedure(Token);
 
 	bool OperatorsSection(Tree*, std::string, std::string, size_t);
