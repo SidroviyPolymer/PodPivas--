@@ -138,7 +138,7 @@ void Lexer::Parse() {
 			continue;
 		}
 
-		if (tmp == ':' || tmp == ',' || tmp == ';' || tmp == '(' || tmp == ')' || tmp == '+' || tmp == '-' || tmp == '*' || tmp == '.') { // Если встретили терминальный символ,а не коммент
+		if (tmp == ':' || tmp == ',' || tmp == ';' || tmp == '(' || tmp == ')' || tmp == '+' || tmp == '-' || tmp == '*') { // Если встретили терминальный символ,а не коммент
 			if (word != "") {
 				flow->Push_back(word);
 				Pos buf = Pos(line, column - word.length());
@@ -222,7 +222,7 @@ void Lexer::Parse() {
 
 		word += tmp;		
 
-		if (word == "end.") { // Если end. , то прекраща
+		if (word == ".") { // Если end. , то прекраща
 			flow->Push_back(word);
 			Pos buf = Pos(line, column + 1 - word.length());
 			flow2->Push_back(buf);
@@ -232,6 +232,13 @@ void Lexer::Parse() {
 
 		prev = tmp;
 		isBegin = false;
+	}
+
+	if (word != "") {
+		word = word.substr(0, word.length() - 1);
+		flow->Push_back(word);
+		Pos buf = Pos(line, column + 1 - word.length());
+		flow2->Push_back(buf);
 	}
 
 	//for (size_t idx = 0; idx < flow->Length(); ++idx)
@@ -246,10 +253,11 @@ void Lexer::TokenList(bool& result) { // Функция заполнение л�
 	//std::cout << flow->Length() << " " << flow2->Length() << std::endl;
 	std::string prev = "";
 	Pos prevpos;
+	Pos elempos;
 	bool isNegative = false;
 	for (; flow->Length() > 0;) {
 		std::string elem = flow->Pop_front();
-		Pos elempos = flow2->Pop_front();
+		elempos = flow2->Pop_front();
 		if (terminals.Contains(elem)) { // Если есть совпадения с терминальными символами
 			Terminal(elem,elempos);
 			prev = elem;
@@ -304,9 +312,9 @@ void Lexer::TokenList(bool& result) { // Функция заполнение л�
 		result = false;
 	}
 
-	Pos EoFpos = flow2->Pop_back();
-	flow2->Push_back(EoFpos);
+	Pos EoFpos = elempos;
 	Token EoF = Token("EOF", Token::Type::Terminal, EoFpos.GetLine() + 1, EoFpos.GetColumn());
+	tokens->Push_back(EoF);
 }
 
 void Lexer::Id(std::string word, Pos elempos) {	
@@ -352,23 +360,46 @@ void Lexer::Constant(std::string word, Pos elempos, bool& result) {
 			constant *= -1;
 	}
 	else {
-		std::string buf;
-		bool start = false;
-		for (int i = 0; i < word.length(); i++) {
-			if (start) {
-				buf += word[i];
-			}
-			if (word[i] == '$') {
-				start = true;
+		bool isNegative = false;
+		bool isNegative2 = false;
+		//std::cout << "word " << word << std::endl;
+		//std::cout << "wordlenght " << word.length() << std::endl;
+		if (word[0] == '-') {
+			word.erase(word.begin());
+			isNegative2 = true;
+		}
+		if (word.length() < 5) {
+			word[0] = '0';
+
+			while (word.length() < 5) {
+				word.insert(0, "0");
 			}
 		}
+		//std::cout << "wordafter " << word << std::endl;
 
-		std::stringstream ss;
-		ss << std::hex << buf;
-		ss >> constant;
-		if (word[0] = '-')
+		for (size_t idx = 1; idx < word.length(); ++idx) {
+			if (idx == 1 && (word[idx] == '8' || word[idx] == '9' || word[idx] >= 'a' && word[idx] <= 'f')) {
+				isNegative = true;
+				constant = constant * 16 + ((word[idx] >= '0' && word[idx] <= '9') ? word[idx] - '0' - 8 : word[idx] - 'a' + 2);
+				continue;
+			}
+
+			if (word[idx] >= '0' && word[idx] <= '9' || word[idx] >= 'a' && word[idx] <= 'f')
+				constant = constant * 16 + ((word[idx] >= '0' && word[idx] <= '9') ? word[idx] - '0' : word[idx] - 'a' + 10);
+			else { // Если неправильно было введена константа
+				Error err("L0002", "Wrong symbol in hex integer constant", elempos.GetLine(), elempos.GetColumn());
+				errlist->Push_back(err);
+				result = false;
+				return;
+			}
+		}
+		//std::cout << "cs " << constant << std::endl;
+		if (isNegative)
+			constant -= 32768;
+		//std::cout << "-cs " << constant << std::endl;
+		if (isNegative2)
 			constant *= -1;
-		start = false;
+		//std::cout << "-$cs " << constant << std::endl;
 	}
 
 	if (constant < -32768 || constant > 32767) { // Если превысели допустимое значение 2 байт 
@@ -379,6 +410,7 @@ void Lexer::Constant(std::string word, Pos elempos, bool& result) {
 	else {
 		Token* tmp = new Token(std::to_string(constant), Token::Type::Const, elempos.GetLine(), elempos.GetColumn());
 		tokens->Push_back(*tmp);
+		std::cout << "Token " << tmp->GetContent() << std::endl;
 		delete tmp;
 	}
 }

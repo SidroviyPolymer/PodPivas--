@@ -58,8 +58,11 @@ void Syntax::Program() {
 
 	//.
 	Token point = tokens->At(0);
-	if (point.GetContent() != "point")
+	if (point.GetContent() != "point") {
 		EBFError(point, ".");
+		isGood = false;
+		return;
+	}
 	tokens->Pop_front();
 }
 
