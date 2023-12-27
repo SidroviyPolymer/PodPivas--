@@ -18,31 +18,45 @@ private:
 	void OperatorProcess(Tree* tree);
 	void ProcedureTreeTraversal(Tree* tree);
 	void ProcedureAddress(Tree* tree);
-	void ProcedureAddressInside(Tree* tree);
-	void Procedure(Tree* tree);
+	void ProcedureID(Tree* tree);
 	void ProcedureProcess(Tree* tree, int i);
-	void ProcedureVar(Tree* tree);
-	void ProcedureVarProcess(Tree* tree);
 	void ProcedureBlock(Tree* tree, int i);
 	void Process(Tree* tree);
+	void ProcedureParamTrav(Tree* tree);
+	void ProcedureParamTravMain(Tree* tree);
 	void Start();
 	void TreeTraversal(Tree* tree);
 	void Finish();
+	bool found(std::string a);
 	Tree* _const;
 	Tree* _var;
 	Tree* _code;
 	Tree* _procedure;
 	//штуки для процедур
-	Tree* procedure_address[10];
-	Tree* var_proc[10];
+	Tree* _param;
+	Tree* procedure_address[10];	//адреса процедур
+	Tree* var_proc[10];		
 	Tree* block_proc[10];
+	Tree* var_param_proc[10];
+	std::string var_proc_id[10];	//локальные id процедур для резервирования памяти
+	std::string var_param_proc_id[10];
+	std::string var_param_main[10];	//передаваемые параметры
+	std::string var_param_address[10]; //список ссылок
+	int var_param_address_count = 0;
 	int pr_count_proc = 0;
 	int pr_count_var = 0;
 	int pr_count_block = 0;
+	int pr_count_var_id = 0;
+	int pr_count_var_param = 0;
+	int pr_count_var_param_id = 0;
+	int pr_count_var_param_main = 0;
+	////////////////
 	std::string stack_out = "";
 	std::string _name;
 	bool exit_flag = 0;
 	bool exit_flag_proc = 0;
+	int i_oper = 0;
+	bool proc = 0;
 public:
 	Generator(List<ID>* ids, Tree* syntaxTree);
 	void Working();

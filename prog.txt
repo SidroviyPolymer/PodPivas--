@@ -10,26 +10,28 @@ var
 	_ab, _b : integer;
 	_d, _e, ff, gg : integer;
 
-procedure foo;
-var _a, _d : integer;
+procedure foo(var j, i: integer);
+var _h : integer;
 begin
-exit;
-_a := 7;
+j := 5;
+i := 2;
+_h := 7;
+foo2(j);
 end;
 
-procedure foo2;
-var _a : integer;
+procedure foo2(var o: integer);
+var _b : integer;
 begin
-exit;
-_a := 1;
+_b := 1;
 end;
 
 begin
 _a := 5;
 _ab := 7;
+foo(_a, _ab);
+foo2(_a);
 exit;
 begin
 _d := a - 5 div (_a + _b) *  7;
 end
 end.
-
