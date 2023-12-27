@@ -10,6 +10,7 @@ class Syntax {
 private:
 	void Program();
 	bool DefineName(Token&, ID::Type, std::string);
+	bool DefineProcName(Token&, std::string);
 	bool Semicolon(Token);
 
 	bool Block(Tree*, std::string, std::string);
@@ -24,9 +25,10 @@ private:
 	bool DescriptionSimilarVar(Tree*, std::string, size_t);
 
 	bool ProcedureSection(Tree*, std::string);
-	bool ParamSection(Tree*, std::string);
-	bool ParamDescription(Tree*, std::string);
+	bool ParamSection(Tree*, std::string&, size_t&, std::string);
+	bool ParamDescription(Tree*, std::string&, size_t&, std::string);
 	bool isProcedure(Token);
+	bool CheckProcName(ID&, size_t);
 
 	bool OperatorsSection(Tree*, std::string, std::string, size_t);
 	bool CompoundOperator(Tree*, std::string, std::string, size_t);
@@ -38,6 +40,8 @@ private:
 	bool GetPostfix(List<Token>*, std::string);
 	bool GetExpressionTree(Tree*, List<Token>*);
 	bool isVar(Token);
+
+	bool ProcedureOperator(Tree*, std::string, std::string, size_t);
 
 	bool ComplexOperator(Tree*, std::string, std::string, size_t);
 

@@ -25,11 +25,9 @@ void Syntax::Program() {
 	Token program = tokens->At(0);
 
 	if (program.GetContent() != "program") {
-		//Создаем свое название программы
-		tokens->Pop_front();
-		Token name("BEGIN", Token::Type::Id, 0, 0);
+		Token name("id" + std::to_string(ids->Length()), Token::Type::Id, 0, 0);
 		Token semicolon(";", Token::Type::Terminal, 0, 0);
-		ID progName("id" + std::to_string(ids->Length()), ID::Type::Not_defined, 0, 0);
+		ID progName("BEGIN", ID::Type::Not_defined, 0, 0);
 		ids->Push_back(progName);
 		tokens->Push_front(semicolon);
 		tokens->Push_front(name);
@@ -74,11 +72,25 @@ bool Syntax::DefineName(Token& name, ID::Type type, std::string area) {
 	ID& nameID = ids->At(idx);
 
 	if (nameID.GetArea() != "undefined") {
+		//std::cout << nameID.GetContent() << " " << nameID.GetArea() << " " << area << std::endl;
 		if (nameID.GetArea() == area) {
 			//ОШИБКА: Повторное объявление
+			Error err = Error("S", "Variable " + nameID.GetContent() + " is already declared.", name.GetPos().first, name.GetPos().second);
+			errlist->Push_back(err);
 			isGood = false;
 			return false;
 		}
+
+		ID cpyID = nameID;
+		cpyID.SetArea(area);
+		if (ids->Find(cpyID) > 0) {
+			//ОШИБКА: Повторное объявление
+			Error err = Error("S", "Variable " + nameID.GetContent() + " is already declared.", name.GetPos().first, name.GetPos().second);
+			errlist->Push_back(err);
+			isGood = false;
+			return false;
+		}
+
 		ID newNameID = ID(nameID.GetContent(), type, name.GetPos().first, name.GetPos().second);
 		newNameID.SetArea(area);
 		name.GetContent() = "id" + std::to_string(ids->Length());
@@ -90,6 +102,34 @@ bool Syntax::DefineName(Token& name, ID::Type type, std::string area) {
 	nameID.SetArea(area);
 
 	return true;
+}
+
+bool Syntax::DefineProcName(Token& name, std::string area) {
+	if (name.GetType() != Token::Type::Id)
+		return false;
+
+	size_t idx = std::stoi(name.GetContent().substr(2));
+	ID& nameID = ids->At(idx);
+	std::string expectedName = "";	
+	std::string currentName = nameID.GetContent();
+
+	if (currentName[0] == '@') {
+		expectedName = currentName.substr(1);
+		size_t length = 0;
+		while (expectedName[0] >= '0' && expectedName[0] <= '9') {
+			length = length * 10 + (expectedName[0] - '0');
+			expectedName = expectedName.substr(1);
+		}
+
+		expectedName = expectedName.substr(0, length);
+		nameID.GetContent() = expectedName;
+		//std::cout << currentName << " " << expectedName << std::endl;
+	}
+	
+	bool result = DefineName(name, ID::Type::Proc, area);
+	nameID.GetContent() = currentName;
+
+	return result;
 }
 
 bool Syntax::Semicolon(Token semicolon) {
@@ -597,7 +637,7 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 	tree = tree->CreateLeft();
 
 	while (procedure.GetContent() == "procedure") {
-		std::string _area = (area == "global" ? "" : area + "_") + "PROC" + std::to_string(procIdx++);
+		std::string _area = (area == "global" ? "" : (area + "_")) + "PROC" + std::to_string(procIdx++);
 
 		tokens->Pop_front();
 
@@ -606,18 +646,20 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 
 		//id
 		Token name = tokens->At(0);
-		if (!DefineName(name, ID::Type::Proc, _area))
+		if (!DefineProcName(name, area))
 			return false;
 
 		tokens->Pop_front();
 		procTree->SetData(name.GetContent());
 
 		//(
+		std::string parStr = "";
+		size_t parCount = 0;
 		Token bracket = tokens->At(0);
 		if (bracket.GetContent() == "(") {
 			tokens->Pop_front();
 			//[param]			
-			ParamSection(procTree->CreateLeft(), _area);
+			ParamSection(procTree->CreateLeft(), parStr, parCount, _area);
 
 			//)
 			bracket = tokens->At(0);
@@ -628,6 +670,20 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 			}
 			tokens->Pop_front();
 		}		
+
+		//std::cout << parCount << parStr << std::endl;
+		size_t idx = std::stoi(name.GetContent().substr(2));
+		ID& id = ids->At(idx);
+		std::string newProcName = "@" + std::to_string(id.GetContent().length()) + id.GetContent() + "_" + std::to_string(parCount) + parStr;
+		id.GetContent() = newProcName;
+
+		if (!CheckProcName(id, idx)) {
+			//Ошибка
+			Error err = Error("S", "This procedure is already geclared", name.GetPos().first, name.GetPos().second);
+			errlist->Push_back(err);
+			isGood = false;
+			return true;
+		}
 
 		//;
 		Token semicolon = tokens->At(0);
@@ -664,9 +720,9 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 	return true;
 }
 
-bool Syntax::ParamSection(Tree* tree, std::string area) {
+bool Syntax::ParamSection(Tree* tree, std::string& parStr, size_t& parCount, std::string area) {
 	//<description>
-	if (!ParamDescription(tree, area))
+	if (!ParamDescription(tree, parStr, parCount, area))
 		return false;
 
 	//[; <description>]
@@ -674,7 +730,7 @@ bool Syntax::ParamSection(Tree* tree, std::string area) {
 	while (Semicolon(semicolon)) {
 		tokens->Pop_front();
 		tree = tree->CreateRight();
-		if (!ParamDescription(tree, area))
+		if (!ParamDescription(tree, parStr, parCount, area))
 			return false;
 
 		semicolon = tokens->At(0);
@@ -683,18 +739,21 @@ bool Syntax::ParamSection(Tree* tree, std::string area) {
 	return true;
 }
 
-bool Syntax::ParamDescription(Tree* tree, std::string area) {
+bool Syntax::ParamDescription(Tree* tree, std::string& parStr, size_t& parCount, std::string area) {
 	//[(var, const)]
 	Token var = tokens->At(0);
 	ID::Type type = ID::Type::Var;
+	char ctype = 'i';
 	if (var.GetContent() == "var") {
 		tokens->Pop_front();
 		tree->SetData("var-param");		
+		ctype = 'v';
 	}		
 	else if (var.GetContent() == "const") {
 		tokens->Pop_front();
 		tree->SetData("const-param");
 		type = ID::Type::Const;
+		ctype = 'c';
 	}		
 	else
 		tree->SetData("param");
@@ -715,6 +774,8 @@ bool Syntax::ParamDescription(Tree* tree, std::string area) {
 
 	tokens->Pop_front();
 	tree->SetData(name.GetContent());
+	parStr += ctype;
+	++parCount;
 
 	//[, name]
 	Token comma = tokens->At(0);
@@ -737,6 +798,8 @@ bool Syntax::ParamDescription(Tree* tree, std::string area) {
 
 		tokens->Pop_front();
 		tree->SetData(name.GetContent());
+		parStr += ctype;
+		++parCount;
 		comma = tokens->At(0);
 	}	
 
@@ -765,9 +828,14 @@ bool Syntax::isProcedure(Token token) {
 		size_t idx = std::stoi(token.GetContent().substr(2));
 		ID id = ids->At(idx);
 
-		return id.GetType() != ID::Type::Proc;
+		return id.GetType() == ID::Type::Proc;
 	}
 	return false;
+}
+
+bool Syntax::CheckProcName(ID& id, size_t idx) {
+	size_t fidx = ids->Find(id);
+	return fidx == idx;
 }
 
 bool Syntax::OperatorsSection(Tree* tree, std::string area, std::string label, size_t idx) {
@@ -836,7 +904,9 @@ bool Syntax::SimpleOperator(Tree* tree, std::string area, std::string label, siz
 		return true;
 
 	//<procedure_operator>
-	
+	if (ProcedureOperator(tree, area, label, idx))
+		return true;
+
 	//<exit_operator>
 	if (ExitOperator(tree, label, idx))
 		return true;
@@ -851,29 +921,32 @@ bool Syntax::SimpleOperator(Tree* tree, std::string area, std::string label, siz
 bool Syntax::AssigmentOperator(Tree* tree, std::string area, std::string label, size_t idx) {
 	//<variable>
 	Token var = tokens->At(0);
-	if (!isVar(var))
-		return false;	
+
+	if (var.GetType() != Token::Type::Id)
+		return false;
 
 	if (!CheckArea(var, area))
-		return false;
-	tokens->Pop_front();
+		return false;	
 
 	//:=
-	Token assign = tokens->At(0);
-	if (assign.GetContent() != ":=") {
-		//Ошибка
+	Token assign = tokens->At(1);
+	if (assign.GetContent() != ":=")
+		return false;
+	
+	if (Constant(var)) {
+		Error err = Error("S", var.GetContent() + " is a constant identifier. Variable identifier expected", var.GetPos().first, var.GetPos().second);
+		errlist->Push_back(err);
 		isGood = false;
 		return false;
 	}
+
+	tokens->Pop_front();
 	tokens->Pop_front();
 	
 	//<expression>
 	Tree* exprTree = new Tree();
-	if (!Expression(exprTree, area)) {
-		//Ошибка
-		isGood = false;
+	if (!Expression(exprTree, area))
 		return false;
-	}
 
 	tree->SetData(label + std::to_string(idx));
 	tree = tree->CreateLeft();
@@ -894,9 +967,9 @@ bool Syntax::Expression(Tree* tree, std::string area) {
 	if (!GetPostfix(&postfix, area))
 		return false;
 
-	for (size_t idx = 0; idx < postfix.Length(); ++idx)
-		std::cout << postfix.At(idx).GetContent() << " ";
-	std::cout << std::endl;
+	//for (size_t idx = 0; idx < postfix.Length(); ++idx)
+	//	std::cout << postfix.At(idx).GetContent() << " ";
+	//std::cout << std::endl;
 
 	return GetExpressionTree(tree, &postfix);
 }
@@ -915,7 +988,9 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 
 		if (token.GetContent() == "(") {
 			if (!exprExpected) {
-				//Ошибка
+				Error err = Error("S", "Operator or ; expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
+				errlist->Push_back(err);
+				isGood = false;
 				return false;
 			}
 
@@ -936,6 +1011,8 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 					continue;
 				}
 				//Ошибка
+				Error err = Error("S", "Expression expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
+				errlist->Push_back(err);
 				isGood = false;
 				return false;
 			}
@@ -965,6 +1042,8 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 		if (token.GetContent() == "*" || token.GetContent() == "div") {
 			if (exprExpected) {
 				//Ошибка
+				Error err = Error("S", "Expression expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
+				errlist->Push_back(err);
 				isGood = false;
 				return false;
 			}
@@ -994,6 +1073,8 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 		if (token.GetContent() == ")") {
 			if (exprExpected) {
 				//Ошибка
+				Error err = Error("S", "Expression expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
+				errlist->Push_back(err);
 				isGood = false;
 				return false;
 			}
@@ -1006,16 +1087,13 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 
 			if (stack.Length() != 0) {
 				Token tmp = stack.At(0);
-				if (tmp.GetContent() == "(") {
-					//Ошибка
-					isGood = false;
-					return false;
-				}
 				while (tmp.GetContent() != "(") {
 					tmp = stack.Pop_front();
 					result->Push_back(tmp);
 					if (stack.Length() == 0 && tmp.GetContent() != ")") {
 						//Ошибка
+						Error err = Error("S", "There is no ( for current )", token.GetPos().first, token.GetPos().second);
+						errlist->Push_back(err);
 						isGood = false;
 						return false;
 					}
@@ -1030,6 +1108,8 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 		if (Constant(token) || isVar(token)) {
 			if (!exprExpected) {
 				//Ошибка
+				Error err = Error("S", "Operator or ; expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
+				errlist->Push_back(err);
 				isGood = false;
 				return false;
 			}
@@ -1048,6 +1128,8 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 				Token tmp = stack.Pop_front();
 				if (tmp.GetContent() == "(") {
 					//Ошибка
+					Error err = Error("S", "There is no ) for current (", tmp.GetPos().first, tmp.GetPos().second);
+					errlist->Push_back(err);
 					isGood = false;
 					return false;
 				}
@@ -1063,6 +1145,8 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 
 			if (result->Length() == 0) {
 				//Ошибка
+				Error err = Error("S", "Expression expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
+				errlist->Push_back(err);
 				isGood = false;
 				return false;
 			}
@@ -1072,7 +1156,20 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 
 		//Ошибка
 		isGood = false;
-		return false;
+
+		if (!exprExpected) {
+			Error err = Error("S", "Operator or ; expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
+			errlist->Push_back(err);
+			return false;
+		}
+		
+		if (token.GetType() != Token::Type::Id) {
+			Error err = Error("S", "Expression expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
+			errlist->Push_back(err);
+			return false;
+		}		
+
+		return CheckArea(token, area);
 	}
 }
 
@@ -1125,6 +1222,156 @@ bool Syntax::isVar(Token token) {
 	return false;
 }
 
+bool Syntax::ProcedureOperator(Tree* tree, std::string area, std::string label, size_t idx) {
+	//<procedure name>	
+	if (tokens->Length() == 0) {
+		//Ошибка
+		isGood = false;
+		return false;
+	}
+
+	Token procName = tokens->At(0);
+
+	if (!isProcedure(procName))
+		return false;
+
+	if (!CheckArea(procName, area))
+		return false;
+
+	tree->SetData(label + std::to_string(idx));
+	tree = tree->CreateLeft();
+	tree->SetData("CALL");
+	Tree* nameTree = tree->CreateLeft();
+	Tree* paramTree = tree->CreateRight();
+	nameTree->SetData(procName.GetContent());
+
+	tokens->Pop_front();
+
+	//[param]
+
+	size_t idIdx = std::stoi(procName.GetContent().substr(2));
+	ID id = ids->At(idIdx);
+	size_t lidx = id.GetContent().find_last_of("_");
+	std::string paramStr = id.GetContent().substr(lidx + 1);
+	size_t paramCount = 0;
+
+	while (paramStr[0] >= '0' && paramStr[0] <= '9') {
+		paramCount = paramCount * 10 + paramStr[0] - '0';
+		paramStr = paramStr.substr(1);
+	}
+
+	Token bracket = tokens->At(0);
+	if (bracket.GetContent() != "(") {
+		if (paramCount == 0)
+			return true;
+
+		//Ошибка
+		std::string expectedName = id.GetContent().substr(1);
+		size_t length = 0;
+		while (expectedName[0] >= '0' && expectedName[0] <= '9') {
+			length = length * 10 + (expectedName[0] - '0');
+			expectedName = expectedName.substr(1);
+		}
+		expectedName = expectedName.substr(0, length);
+
+		Error err = Error("S", "Wrong number of parameters specified for call to \"" + expectedName + "\"", procName.GetPos().first, procName.GetPos().second);
+		errlist->Push_back(err);
+		isGood = false;
+		return true;
+	}
+	tokens->Pop_front();
+
+	for (size_t paramIdx = 0; paramIdx < paramCount; ++paramIdx) {
+		char paramType = paramStr[0];
+		paramStr = paramStr.substr(1);
+		Token param = tokens->At(0);
+
+		if (!CheckArea(param, area))
+			return true;
+
+		switch (paramType) {
+		case 'i':
+			if (!isVar(param) && !Constant(param)) {
+				//Ошибка
+				Error err = Error("S", "Illegal expression", param.GetPos().first, param.GetPos().second);
+				errlist->Push_back(err);
+				isGood = false;
+				return true;
+			}
+			break;
+		case 'v':
+			if (!isVar(param)) {
+				//Ошибка
+				if (Constant(param)) {
+					Error err = Error("S", "Variable identifier expected", param.GetPos().first, param.GetPos().second);
+					errlist->Push_back(err);
+				}
+				else {
+					Error err = Error("S", "Illegal expression", param.GetPos().first, param.GetPos().second);
+					errlist->Push_back(err);
+				}
+
+				isGood = false;
+				return true;
+			}
+			break;
+		case 'c':
+			if (!isVar(param) && !Constant(param)) {
+				//Ошибка
+				Error err = Error("S", "Illegal expression", param.GetPos().first, param.GetPos().second);
+				errlist->Push_back(err);
+				isGood = false;
+				return true;
+			}
+			break;
+		}
+		paramTree->SetData(param.GetContent());		
+		tokens->Pop_front();
+		
+		if (paramIdx == paramCount - 1)
+			continue;
+
+		paramTree = paramTree->CreateRight();
+
+		Token comma = tokens->At(0);
+		if (comma.GetContent() != ",") {
+			std::string found = comma.GetContent();
+			if (comma.GetType() == Token::Type::Id) {
+				size_t idx = std::stoi(found.substr(2));
+				found = ids->At(idx).GetContent();
+			}
+
+			//Ошибка
+			Error err = Error("S", ", expected but " + found + " found", comma.GetPos().first, comma.GetPos().second);
+			errlist->Push_back(err);
+			isGood = false;
+			return true;
+		}
+		tokens->Pop_front();
+	}
+
+	bracket = tokens->At(0);
+	if (bracket.GetContent() != ")") {
+		if (paramCount == 0)
+			return true;
+
+		//Ошибка
+		std::string expectedName = id.GetContent().substr(1);
+		size_t length = 0;
+		while (expectedName[0] >= '0' && expectedName[0] <= '9') {
+			length = length * 10 + (expectedName[0] - '0');
+			expectedName = expectedName.substr(1);
+		}
+		expectedName = expectedName.substr(0, length);
+
+		Error err = Error("S", ") expected but " + bracket.GetContent() + " found", bracket.GetPos().first, bracket.GetPos().second);
+		errlist->Push_back(err);
+		isGood = false;
+		return true;
+	}
+	tokens->Pop_front();
+}
+
 bool Syntax::ComplexOperator(Tree* tree, std::string area, std::string label, size_t idx) {
 	tree->SetData(label + std::to_string(idx));
 
@@ -1167,13 +1414,15 @@ void Syntax::NULLOP(Tree* tree, std::string label, size_t idx) {
 }
 
 bool Syntax::CheckArea(Token& token, std::string area) {
+	//std::cout << token.GetContent() << " " << area << std::endl;
+
 	size_t idx = std::stoi(token.GetContent().substr(2));
 	ID id = ids->At(idx);
 
 	if (id.GetArea() == area)
 		return true;
 
-	ID expected = ID(id.GetContent(), id.GetType(), token.GetPos().first, token.GetPos().second);
+	ID expected = id;
 	expected.SetArea(area);
 
 	int newIdx = ids->Find(expected);
@@ -1182,8 +1431,27 @@ bool Syntax::CheckArea(Token& token, std::string area) {
 		return true;
 	}
 
+	size_t lidx = area.find_last_of('_');	
+	while (lidx != std::string::npos) {
+		area = area.substr(0, lidx);
+		expected.SetArea(area);
+		
+		int newIdx = ids->Find(expected);
+		if (newIdx > 0) {
+			token.GetContent() = "id" + std::to_string(newIdx);
+			return true;
+		}
+
+		lidx = area.find_last_of('_');
+	}
+
 	if (id.GetArea() == "global")
 		return true;
+
+	//Ошибка
+	Error err = Error("S", id.GetContent() + " is an undeclared identifier", token.GetPos().first, token.GetPos().second);
+	errlist->Push_back(err);
+	isGood = false;
 
 	return false;
 }
