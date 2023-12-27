@@ -18,8 +18,6 @@ Tree* Syntax::GetTree() {
 }
 
 void Syntax::Program() {
-	if (tokens->Length() == 0)
-		return;
 
 	//program
 	Token program = tokens->At(0);
@@ -37,9 +35,7 @@ void Syntax::Program() {
 
 	//<name>
 	Token name = tokens->At(0);
-	if (!DefineName(name, ID::Type::Prog, "global")) {
-		//Œ¯Ë·Í‡
-	}
+	DefineName(name, ID::Type::Prog, "global");
 	tokens->Pop_front();
 
 	syntaxTree = new Tree(name.GetContent());
@@ -48,19 +44,22 @@ void Syntax::Program() {
 	Token semicolon = tokens->At(0);
 	if (!Semicolon(semicolon)) {
 		//Œ¯Ë·Í‡
+		EBFError(semicolon, ";");
+		isGood = false;
+		return;
 	}
 	tokens->Pop_front();
 
 	//<block>		
 	if (!Block(syntaxTree, "OP", "global")) {
 		//Œ¯Ë·Í‡
+		return;
 	}
 
 	//.
 	Token point = tokens->At(0);
-	if (point.GetContent() != "point") {
-		//Œ¯Ë·Í‡;
-	}
+	if (point.GetContent() != "point")
+		EBFError(point, ".");
 	tokens->Pop_front();
 }
 
@@ -137,9 +136,6 @@ bool Syntax::Semicolon(Token semicolon) {
 }
 
 bool Syntax::Block(Tree* tree, std::string label, std::string area) {
-	if (tokens->Length() == 0)		
-		return false;
-
 	Tree* definitions = tree->CreateLeft();
 	Tree* operators = tree->CreateRight();
 
@@ -147,32 +143,30 @@ bool Syntax::Block(Tree* tree, std::string label, std::string area) {
 	if (ConstantSection(definitions, area))
 		definitions = definitions->CreateRight();
 
-	//tree->Print();
+	if (!isGood)
+		return false;
 
 	//<variables_section>
 	if (VariableSection(definitions, area))
 		definitions = definitions->CreateRight();
 
-	//tree->Print();
+	if (!isGood)
+		return false;
 
 	//<procedures_section>
 	ProcedureSection(definitions, area);
 
+	if (!isGood)
+		return false;
 
 	//<operators_section>
-	if (!OperatorsSection(operators, area, label, 1)) {
-		//Œ¯Ë·Í‡
-		isGood = false;
+	if (!OperatorsSection(operators, area, label, 1))
 		return false;
-	}
 
 	return true;
 }
 
 bool Syntax::ConstantSection(Tree* tree, std::string area) {
-	if (tokens->Length() == 0)
-		return false;
-
 	//const
 	Token _const = tokens->At(0);
 	if (_const.GetContent() != "const")
@@ -184,11 +178,8 @@ bool Syntax::ConstantSection(Tree* tree, std::string area) {
 	tree = tree->CreateLeft();
 
 	//<definition_constant>
-	if (!DefinitionConstant(tree, area)) {
-		//Œ¯Ë·Í‡
-		isGood = false;
+	if (!DefinitionConstant(tree, area))
 		return false;
-	}	
 	
 	Tree* prev = tree;
 	tree = tree->CreateRight();
@@ -199,13 +190,14 @@ bool Syntax::ConstantSection(Tree* tree, std::string area) {
 		tree = tree->CreateRight();
 	}
 
+	if (!isGood)
+		return false;
+
 	prev->DeleteRight();
 	return true;
 }
 
 bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
-	if (tokens->Length() == 0)
-		return false;
 
 	//<name>
 	Token name = tokens->At(0);
@@ -219,7 +211,8 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 	//=
 	Token equal = tokens->At(0);
 	if (equal.GetContent() != "=") {
-		//Œÿ»¡ ¿
+		//Œ¯Ë·Í‡
+		EBFError(equal, "=");
 		isGood = false;
 		return false;
 	}
@@ -227,11 +220,8 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 
 	//<constant_expression>	
 	int val = 0; 
-	if (!ConstantExpression(tree->CreateLeft(), area, val)) {
-		//Œÿ»¡ ¿
-		isGood = false;
+	if (!ConstantExpression(tree->CreateLeft(), area, val))
 		return false;
-	}
 
 	size_t idx = std::stoi(name.GetContent().substr(2));
 	ids->At(idx).SetVal(val);
@@ -240,6 +230,7 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 	Token semicolon = tokens->At(0);
 	if (!Semicolon(semicolon)) {
 		//Œ¯Ë·Í‡
+		EBFError(semicolon, ";");
 		isGood = false;
 		return false;
 	}
@@ -249,9 +240,6 @@ bool Syntax::DefinitionConstant(Tree* tree, std::string area) {
 }
 
 bool Syntax::ConstantExpression(Tree* tree, std::string area, int& res) {
-	if (tokens->Length() == 0)
-		return false;
-
 	List<Token>* postfix = new List<Token>();
 	if (!GetConstPostfix(postfix, area))
 		return false;
@@ -308,8 +296,6 @@ bool Syntax::ConstantExpression(Tree* tree, std::string area, int& res) {
 
 			continue;
 		}
-
-		return false;
 	}
 	
 	res = stack->Pop_front();
@@ -328,14 +314,14 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 	bool isNegative = false;
 
 	while (true) {
-		if (tokens->Length() == 0)
-			return false;
-
 		Token token = tokens->At(0);
 
 		if (token.GetContent() == "(") {
 			if (!exprExpected) {
 				//Œ¯Ë·Í‡
+				Error err = Error("S", "Unexpected expression found", token.GetPos().first, token.GetPos().second);
+				errlist->Push_back(err);
+				isGood = false;
 				return false;
 			}
 
@@ -356,6 +342,7 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 					continue;
 				}
 				//Œ¯Ë·Í‡
+				EBFError(token, "Operator or ;");
 				isGood = false;
 				return false;
 			}
@@ -385,6 +372,7 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 		if (token.GetContent() == "*" || token.GetContent() == "div") {
 			if (exprExpected) {
 				//Œ¯Ë·Í‡
+				EBFError(token, "Expression");
 				isGood = false;
 				return false;
 			}
@@ -414,6 +402,7 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 		if (token.GetContent() == ")") {
 			if (exprExpected) {
 				//Œ¯Ë·Í‡
+				EBFError(token, "Expression");
 				isGood = false;
 				return false;
 			}
@@ -426,16 +415,13 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 
 			if (stack.Length() != 0) {
 				Token tmp = stack.At(0);
-				if (tmp.GetContent() == "(") {
-					//Œ¯Ë·Í‡
-					isGood = false;
-					return false;
-				}
 				while (tmp.GetContent() != "(") {
 					tmp = stack.Pop_front();
 					result->Push_back(tmp);
 					if (stack.Length() == 0 && tmp.GetContent() != ")") {
 						//Œ¯Ë·Í‡
+						Error err = Error("S", "There is no ( for current )", token.GetPos().first, token.GetPos().second);
+						errlist->Push_back(err);
 						isGood = false;
 						return false;
 					}
@@ -450,6 +436,8 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 		if (Constant(token)) {
 			if (!exprExpected) {
 				//Œ¯Ë·Í‡
+				Error err = Error("S", "Unexpected expression found", token.GetPos().first, token.GetPos().second);
+				errlist->Push_back(err);
 				isGood = false;
 				return false;
 			}
@@ -468,6 +456,8 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 				Token tmp = stack.Pop_front();
 				if (tmp.GetContent() == "(") {
 					//Œ¯Ë·Í‡
+					Error err = Error("S", "There is no ) for current (", tmp.GetPos().first, tmp.GetPos().second);
+					errlist->Push_back(err);
 					isGood = false;
 					return false;
 				}
@@ -491,6 +481,20 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 		}
 
 		//Œ¯Ë·Í‡
+
+		isGood = false;
+
+		if (!exprExpected) {
+			Error err = Error("S", "Illegal expression", token.GetPos().first, token.GetPos().second);
+			errlist->Push_back(err);
+			return false;
+		}
+
+		if (token.GetType() != Token::Type::Id) {
+			EBFError(token, "Expression");
+			return false;
+		}
+
 		isGood = false;
 		return false;
 	}
@@ -516,8 +520,6 @@ bool Syntax::Constant(Token constant) {
 }
 
 bool Syntax::VariableSection(Tree* tree, std::string area) {
-	if (tokens->Length() == 0)
-		return false;
 
 	//var
 	Token var = tokens->At(0);
@@ -530,16 +532,14 @@ bool Syntax::VariableSection(Tree* tree, std::string area) {
 
 	//<description_similar_var>
 	size_t DSidx = 0;
-	if (!DescriptionSimilarVar(DStree, area, DSidx++)) {
-		//Œ¯Ë·Í‡
-		isGood = false;
+	if (!DescriptionSimilarVar(DStree, area, DSidx++))
 		return false;
-	}
 
 	//;
 	Token semicolon = tokens->At(0);
 	if (!Semicolon(semicolon)) {
 		//Œ¯Ë·Í‡
+		EBFError(semicolon, ";");
 		isGood = false;
 		return false;
 	}
@@ -553,6 +553,7 @@ bool Syntax::VariableSection(Tree* tree, std::string area) {
 		Token semicolon = tokens->At(0);
 		if (!Semicolon(semicolon)) {
 			//Œ¯Ë·Í‡
+			EBFError(semicolon, ";");
 			isGood = false;
 			return false;
 		}
@@ -566,8 +567,6 @@ bool Syntax::VariableSection(Tree* tree, std::string area) {
 }
 
 bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area, size_t idx) {
-	if (tokens->Length() == 0)
-		return false;	
 
 	//std::cout << "DS" + std::to_string(idx) << std::endl;
 	tree->SetData("DS" + std::to_string(idx));
@@ -588,11 +587,9 @@ bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area, size_t idx) {
 	while (comma.GetContent() == ",") {
 		tokens->Pop_front();
 		Token name = tokens->At(0);
-		if (!DefineName(name, ID::Type::Var, area)) {
-			//Œ¯Ë·Í‡
-			isGood = false;
+		if (!DefineName(name, ID::Type::Var, area))
 			return false;
-		}
+
 		tokens->Pop_front();
 		tree->SetData(name.GetContent());
 		
@@ -606,6 +603,7 @@ bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area, size_t idx) {
 	Token colon = tokens->At(0);
 	if (colon.GetContent() != ":") {
 		//Œ¯Ë·Í‡
+		EBFError(colon, ":");
 		isGood = false;
 		return false;
 	}
@@ -615,6 +613,7 @@ bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area, size_t idx) {
 	Token integer = tokens->At(0);
 	if (integer.GetContent() != "integer") {
 		//Œ¯Ë·Í‡
+		EBFError(integer, "integer");
 		isGood = false;
 		return false;
 	}
@@ -624,8 +623,6 @@ bool Syntax::DescriptionSimilarVar(Tree* tree, std::string area, size_t idx) {
 }
 
 bool Syntax::ProcedureSection(Tree* tree, std::string area) {
-	if (tokens->Length() == 0)
-		return false;
 
 	size_t procIdx = 0;
 
@@ -665,6 +662,7 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 			bracket = tokens->At(0);
 			if (bracket.GetContent() != ")") {
 				//Œ¯Ë·Í‡
+				EBFError(bracket, ")");
 				isGood = false;
 				return false;
 			}
@@ -679,7 +677,7 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 
 		if (!CheckProcName(id, idx)) {
 			//Œ¯Ë·Í‡
-			Error err = Error("S", "This procedure is already geclared", name.GetPos().first, name.GetPos().second);
+			Error err = Error("S", "This procedure is already declared", name.GetPos().first, name.GetPos().second);
 			errlist->Push_back(err);
 			isGood = false;
 			return true;
@@ -689,6 +687,7 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 		Token semicolon = tokens->At(0);
 		if (!Semicolon(semicolon)) {
 			//Œ¯Ë·Í‡
+			EBFError(semicolon, ";");
 			isGood = false;
 			return false;
 		}			
@@ -697,16 +696,14 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 		//block      label pr[idx]_op or		
 		std::string nodeName = "block";
 
-		if (!Block(procTree->CreateRight(nodeName), _area + "_OP", _area)) {
-			//Œ¯Ë·Í‡
-			isGood = false;
+		if (!Block(procTree->CreateRight(nodeName), _area + "_OP", _area))
 			return false;
-		}
 
 		//;
 		semicolon = tokens->At(0);
 		if (!Semicolon(semicolon)) {
 			//Œ¯Ë·Í‡
+			EBFError(semicolon, ";");
 			isGood = false;
 			return false;
 		}
@@ -766,11 +763,8 @@ bool Syntax::ParamDescription(Tree* tree, std::string& parStr, size_t& parCount,
 	if (name.GetType() != Token::Type::Id)
 		return false;
 
-	if (!DefineName(name, type, area)) {
-		//Œ¯Ë·Í‡
-		isGood = false;
-		return false;
-	}		
+	if (!DefineName(name, type, area))
+		return false;	
 
 	tokens->Pop_front();
 	tree->SetData(name.GetContent());
@@ -786,15 +780,13 @@ bool Syntax::ParamDescription(Tree* tree, std::string& parStr, size_t& parCount,
 
 		if (name.GetType() != Token::Type::Id) {
 			//Œ¯Ë·Í‡
+			EBFError(name, "Identifier");
 			isGood = false;
 			return false;
 		}			
 
-		if (!DefineName(name, type, area)) {
-			//Œ¯Ë·Í‡
-			isGood = false;
+		if (!DefineName(name, type, area))
 			return false;
-		}
 
 		tokens->Pop_front();
 		tree->SetData(name.GetContent());
@@ -807,19 +799,22 @@ bool Syntax::ParamDescription(Tree* tree, std::string& parStr, size_t& parCount,
 	Token colon = tokens->At(0);
 	if (colon.GetContent() != ":") {
 		//Œ¯Ë·Í‡
+		EBFError(colon, ":");
 		isGood = false;
 		return false;
 	}
 	tokens->Pop_front();
 
+	//integer
 	Token integer = tokens->At(0);
 	if (integer.GetContent() != "integer") {
 		//Œ¯Ë·Í‡
+		EBFError(integer, "integer");
 		isGood = false;
 		return false;
 	}
 	tokens->Pop_front();
-	//integer
+
 	return true;
 }
 
@@ -844,8 +839,6 @@ bool Syntax::OperatorsSection(Tree* tree, std::string area, std::string label, s
 }
 
 bool Syntax::CompoundOperator(Tree* tree, std::string area, std::string label, size_t idx) {
-	if (tokens->Length() == 0)
-		return false;
 
 	//begin	
 	Token _begin = tokens->At(0);
@@ -878,6 +871,7 @@ bool Syntax::CompoundOperator(Tree* tree, std::string area, std::string label, s
 	Token end = tokens->At(0);
 	if (end.GetContent() != "end") {
 		//Œ¯Ë·Í‡
+		EBFError(end, "end");
 		isGood = false;
 		return false;
 	}
@@ -891,6 +885,9 @@ bool Syntax::Operator(Tree* tree, std::string area, std::string label, size_t id
 	if (SimpleOperator(tree, area, label, idx))
 		return true;
 
+	if (!isGood)
+		return false;
+
 	//<complex operator>	
 	if (ComplexOperator(tree, area, label, idx))
 		return true;
@@ -903,13 +900,22 @@ bool Syntax::SimpleOperator(Tree* tree, std::string area, std::string label, siz
 	if (AssigmentOperator(tree, area, label, idx))
 		return true;
 
+	if (!isGood)
+		return false;
+
 	//<procedure_operator>
 	if (ProcedureOperator(tree, area, label, idx))
 		return true;
 
+	if (!isGood)
+		return false;
+
 	//<exit_operator>
 	if (ExitOperator(tree, label, idx))
 		return true;
+
+	if (!isGood)
+		return false;
 
 	//<null_operator>
 	if (Null(tree, label, idx))
@@ -959,8 +965,6 @@ bool Syntax::AssigmentOperator(Tree* tree, std::string area, std::string label, 
 }
 
 bool Syntax::Expression(Tree* tree, std::string area) {
-	if (tokens->Length() == 0)
-		return false;
 
 	List<Token> postfix;
 
@@ -981,14 +985,12 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 	bool isNegative = false;
 
 	while (true) {
-		if (tokens->Length() == 0)
-			return false;
 
 		Token token = tokens->At(0);
 
 		if (token.GetContent() == "(") {
 			if (!exprExpected) {
-				Error err = Error("S", "Operator or ; expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
+				Error err = Error("S", "Unexpected expression found", token.GetPos().first, token.GetPos().second);
 				errlist->Push_back(err);
 				isGood = false;
 				return false;
@@ -1011,8 +1013,7 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 					continue;
 				}
 				//Œ¯Ë·Í‡
-				Error err = Error("S", "Expression expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
-				errlist->Push_back(err);
+				EBFError(token, "Expression");
 				isGood = false;
 				return false;
 			}
@@ -1042,8 +1043,7 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 		if (token.GetContent() == "*" || token.GetContent() == "div") {
 			if (exprExpected) {
 				//Œ¯Ë·Í‡
-				Error err = Error("S", "Expression expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
-				errlist->Push_back(err);
+				EBFError(token, "Expression");
 				isGood = false;
 				return false;
 			}
@@ -1073,8 +1073,7 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 		if (token.GetContent() == ")") {
 			if (exprExpected) {
 				//Œ¯Ë·Í‡
-				Error err = Error("S", "Expression expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
-				errlist->Push_back(err);
+				EBFError(token, "Expression");
 				isGood = false;
 				return false;
 			}
@@ -1108,7 +1107,7 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 		if (Constant(token) || isVar(token)) {
 			if (!exprExpected) {
 				//Œ¯Ë·Í‡
-				Error err = Error("S", "Operator or ; expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
+				Error err = Error("S", "Unexpected expression found", token.GetPos().first, token.GetPos().second);
 				errlist->Push_back(err);
 				isGood = false;
 				return false;
@@ -1145,8 +1144,7 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 
 			if (result->Length() == 0) {
 				//Œ¯Ë·Í‡
-				Error err = Error("S", "Expression expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
-				errlist->Push_back(err);
+				EBFError(token, "Expression");
 				isGood = false;
 				return false;
 			}
@@ -1158,14 +1156,13 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 		isGood = false;
 
 		if (!exprExpected) {
-			Error err = Error("S", "Operator or ; expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
+			Error err = Error("S", "Illegal expression", token.GetPos().first, token.GetPos().second);
 			errlist->Push_back(err);
 			return false;
 		}
 		
 		if (token.GetType() != Token::Type::Id) {
-			Error err = Error("S", "Expression expected but " + token.GetContent() + " found", token.GetPos().first, token.GetPos().second);
-			errlist->Push_back(err);
+			EBFError(token, "Expression");
 			return false;
 		}		
 
@@ -1224,12 +1221,6 @@ bool Syntax::isVar(Token token) {
 
 bool Syntax::ProcedureOperator(Tree* tree, std::string area, std::string label, size_t idx) {
 	//<procedure name>	
-	if (tokens->Length() == 0) {
-		//Œ¯Ë·Í‡
-		isGood = false;
-		return false;
-	}
-
 	Token procName = tokens->At(0);
 
 	if (!isProcedure(procName))
@@ -1342,8 +1333,7 @@ bool Syntax::ProcedureOperator(Tree* tree, std::string area, std::string label, 
 			}
 
 			//Œ¯Ë·Í‡
-			Error err = Error("S", ", expected but " + found + " found", comma.GetPos().first, comma.GetPos().second);
-			errlist->Push_back(err);
+			EBFError(comma, ",");
 			isGood = false;
 			return true;
 		}
@@ -1364,8 +1354,7 @@ bool Syntax::ProcedureOperator(Tree* tree, std::string area, std::string label, 
 		}
 		expectedName = expectedName.substr(0, length);
 
-		Error err = Error("S", ") expected but " + bracket.GetContent() + " found", bracket.GetPos().first, bracket.GetPos().second);
-		errlist->Push_back(err);
+		EBFError(bracket, ")");
 		isGood = false;
 		return true;
 	}
@@ -1454,4 +1443,40 @@ bool Syntax::CheckArea(Token& token, std::string area) {
 	isGood = false;
 
 	return false;
+}
+
+std::string Syntax::GetProcName(ID& procID) {
+	std::string name = procID.GetContent();
+
+	if (name[0] != '@')
+		return name;
+
+	size_t length = 0;
+	name = name.substr(1);
+
+	while (name[0] >= '0' && name[0] <= '9') {
+		length = length * 10 + name[0] - '0';
+		name = name.substr(1);
+	}
+
+	return name.substr(0, length);
+}
+
+void Syntax::EBFError(Token& foundToken, std::string expected) {
+	std::string found = foundToken.GetContent();
+	if (foundToken.GetType() != Token::Type::Id) {
+		Error err = Error("S", expected + " expected but " + found + " found", foundToken.GetPos().first, foundToken.GetPos().second);
+		errlist->Push_back(err);
+		return;
+	}
+
+	size_t idx = std::stoi(foundToken.GetContent().substr(2));
+	ID foundID = ids->At(idx);
+	found = foundID.GetContent();
+
+	if (foundID.GetType() == ID::Type::Proc)
+		found = GetProcName(foundID);
+	
+	Error err = Error("S", expected + " expected but " + found + " found", foundToken.GetPos().first, foundToken.GetPos().second);
+	errlist->Push_back(err);
 }

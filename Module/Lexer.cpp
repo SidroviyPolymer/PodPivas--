@@ -1,5 +1,7 @@
 #include "Lexer.h"
 
+#include <sstream>
+
 Pos::Pos() {}
 
 Pos::Pos(int Line, int Column) {
@@ -301,6 +303,10 @@ void Lexer::TokenList(bool& result) { // Функция заполнение л�
 		errlist->Push_back(err);				
 		result = false;
 	}
+
+	Pos EoFpos = flow2->Pop_back();
+	flow2->Push_back(EoFpos);
+	Token EoF = Token("EOF", Token::Type::Terminal, EoFpos.GetLine() + 1, EoFpos.GetColumn());
 }
 
 void Lexer::Id(std::string word, Pos elempos) {	
@@ -325,9 +331,9 @@ void Lexer::Operation(std::string word, Pos elempos) {
 	tokens->Push_back(*tmp);
 }
 
-void Lexer::Constant(std::string word, Pos elempos,bool& result) {
+void Lexer::Constant(std::string word, Pos elempos, bool& result) {
 	int constant = 0;
-	if (word[0] != '$') {		
+	if (word[0] != '$' && word[1] != '$') {
 		for (size_t idx = 0; idx < word.length(); ++idx) {
 			if (idx == 0 && word[idx] == '-')
 				continue;
@@ -340,32 +346,29 @@ void Lexer::Constant(std::string word, Pos elempos,bool& result) {
 				result = false;
 				return;
 			}
-		}			
+		}
 
 		if (word[0] == '-')
 			constant *= -1;
 	}
 	else {
-		bool isNegative = false;
-		for (size_t idx = 1; idx < word.length(); ++idx) {
-			if (idx == 1 && (word[idx] == '8' || word[idx] == '9' || word[idx] >= 'a' && word[idx] <= 'f')) {
-				isNegative = true;
-				constant = constant * 16 + ((word[idx] >= '0' && word[idx] <= '9') ? word[idx] - '0' - 8: word[idx] - 'a' + 2);
-				continue;
-			}				
-
-			if (word[idx] >= '0' && word[idx] <= '9' || word[idx] >= 'a' && word[idx] <= 'f')
-				constant = constant * 16 + ((word[idx] >= '0' && word[idx] <= '9') ? word[idx] - '0' : word[idx] - 'a' + 10);
-			else { // Если неправильно было введена константа
-				Error err("L0002", "Wrong symbol in hex integer constant", elempos.GetLine(), elempos.GetColumn());
-				errlist->Push_back(err);
-				result = false;
-				return;
+		std::string buf;
+		bool start = false;
+		for (int i = 0; i < word.length(); i++) {
+			if (start) {
+				buf += word[i];
+			}
+			if (word[i] == '$') {
+				start = true;
 			}
 		}
 
-		if (isNegative)
-			constant -= 32768;
+		std::stringstream ss;
+		ss << std::hex << buf;
+		ss >> constant;
+		if (word[0] = '-')
+			constant *= -1;
+		start = false;
 	}
 
 	if (constant < -32768 || constant > 32767) { // Если превысели допустимое значение 2 байт 
@@ -376,7 +379,8 @@ void Lexer::Constant(std::string word, Pos elempos,bool& result) {
 	else {
 		Token* tmp = new Token(std::to_string(constant), Token::Type::Const, elempos.GetLine(), elempos.GetColumn());
 		tokens->Push_back(*tmp);
-	}		
+		delete tmp;
+	}
 }
 
 void Lexer::IDList(Pos elempos, List<Token>* tlptr) {

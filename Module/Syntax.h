@@ -52,6 +52,10 @@ private:
 	
 	bool CheckArea(Token&, std::string);
 
+	std::string GetProcName(ID&);
+	void EBFError(Token&, std::string);
+	void EBFError(std::string, std::string);
+
 	Tree* syntaxTree;
 
 	List<Token>* tokens;
