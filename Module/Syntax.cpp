@@ -25,11 +25,9 @@ void Syntax::Program() {
 	Token program = tokens->At(0);
 
 	if (program.GetContent() != "program") {
-		//Создаем свое название программы
-		tokens->Pop_front();
-		Token name("BEGIN", Token::Type::Id, 0, 0);
+		Token name("id" + std::to_string(ids->Length()), Token::Type::Id, 0, 0);
 		Token semicolon(";", Token::Type::Terminal, 0, 0);
-		ID progName("id" + std::to_string(ids->Length()), ID::Type::Not_defined, 0, 0);
+		ID progName("BEGIN", ID::Type::Not_defined, 0, 0);
 		ids->Push_back(progName);
 		tokens->Push_front(semicolon);
 		tokens->Push_front(name);
@@ -1342,6 +1340,8 @@ bool Syntax::ProcedureOperator(Tree* tree, std::string area, std::string label, 
 				size_t idx = std::stoi(found.substr(2));
 				found = ids->At(idx).GetContent();
 			}
+
+			//Ошибка
 			Error err = Error("S", ", expected but " + found + " found", comma.GetPos().first, comma.GetPos().second);
 			errlist->Push_back(err);
 			isGood = false;
