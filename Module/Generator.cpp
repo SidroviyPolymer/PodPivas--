@@ -101,8 +101,8 @@ void Generator::Operator(Tree* tree)
 	if (tree->GetData() == "CALL")
 	{
 		_param = tree->GetRight();
-		ProcedureParamTravMain(_param);
-		ProcedureParamTrav(var_param_proc[i_oper]);
+		if(_param != nullptr) ProcedureParamTravMain(_param);
+		if(var_param_proc[i_oper] != nullptr)ProcedureParamTrav(var_param_proc[i_oper]);
 		i_oper += 1;
 		for (int i = 0; i < pr_count_var_param_main; i++)
 		{
@@ -154,7 +154,8 @@ void Generator::OperatorProcess(Tree* tree)
 			{
 				if (found(ids->At(index).GetContent()))
 				{
-					cout << "push [" << ids->At(index).GetContent() << "]" << endl;
+					cout << "mov BX, " << ids->At(index).GetContent() << endl;
+					cout << "push [BX]"<< endl;
 				}
 				else cout << "push " << ids->At(index).GetContent() << endl;
 			}
@@ -336,7 +337,7 @@ void Generator::Finish()
 	cout << "mov ax, @Data" << endl;
 	cout << "mov ds, ax" << endl;
 	if (_code != nullptr) Operator(_code);
-	if (exit_flag == 1) cout << "exit:" << endl;
+	if (exit_flag == 1) cout << "exit:" << endl; 
 	cout << "mov ax,4C00h" << endl;
 	cout << "int 21h" << endl;
 	proc = 1;

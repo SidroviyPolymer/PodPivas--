@@ -10,6 +10,10 @@ private:
 	List<ID>* ids;
 	Tree* syntaxTree;
 	Tree node;
+	void Start();
+	void TreeTraversal(Tree* tree);
+	void Process(Tree* tree);
+	void Finish();
 	void Constant(Tree* tree);
 	void ConstantProcess(Tree* tree);
 	void Variable(Tree* tree);
@@ -18,15 +22,11 @@ private:
 	void OperatorProcess(Tree* tree);
 	void ProcedureTreeTraversal(Tree* tree);
 	void ProcedureAddress(Tree* tree);
-	void ProcedureID(Tree* tree);
 	void ProcedureProcess(Tree* tree, int i);
 	void ProcedureBlock(Tree* tree, int i);
-	void Process(Tree* tree);
+	void ProcedureID(Tree* tree);
 	void ProcedureParamTrav(Tree* tree);
 	void ProcedureParamTravMain(Tree* tree);
-	void Start();
-	void TreeTraversal(Tree* tree);
-	void Finish();
 	bool found(std::string a);
 	Tree* _const;
 	Tree* _var;
@@ -34,6 +34,7 @@ private:
 	Tree* _procedure;
 	//штуки для процедур
 	Tree* _param;
+	Tree* var_param;
 	Tree* procedure_address[10];	//адреса процедур
 	Tree* var_proc[10];		
 	Tree* block_proc[10];

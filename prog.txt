@@ -16,21 +16,21 @@ begin
 j := 5;
 i := 2;
 _h := 7;
-foo2(j);
+i := j - _h;
 end;
 
-procedure foo2(var o: integer);
+procedure foo2();
 var _b : integer;
 begin
 _b := 1;
 end;
 
+
 begin
 _a := 5;
 _ab := 7;
 foo(_a, _ab);
-foo2(_a);
-exit;
+foo2();
 begin
 _d := a - 5 div (_a + _b) *  7;
 end
