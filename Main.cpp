@@ -73,8 +73,8 @@ int main() {
 		ids->PrintAllLn(idos);
 		idos.close();		
 
-		Generator* gen = new Generator(ids, syntaxTree);
-		gen->Working();
+		//Generator* gen = new Generator(ids, syntaxTree);
+		//gen->Working();
 	}
 	catch (std::exception& e) {
 		std::cout << e.what() << std::endl;

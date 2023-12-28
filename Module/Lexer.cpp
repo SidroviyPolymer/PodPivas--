@@ -419,7 +419,7 @@ void Lexer::Constant(std::string word, Pos elempos, bool& result) {
 	else {
 		Token* tmp = new Token(std::to_string(constant), Token::Type::Const, elempos.GetLine(), elempos.GetColumn());
 		tokens->Push_back(*tmp);
-		std::cout << "Token " << tmp->GetContent() << std::endl;
+		//std::cout << "Token " << tmp->GetContent() << std::endl;
 		delete tmp;
 	}
 }

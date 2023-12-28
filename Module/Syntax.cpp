@@ -77,7 +77,7 @@ bool Syntax::DefineName(Token& name, ID::Type type, std::string area) {
 		//std::cout << nameID.GetContent() << " " << nameID.GetArea() << " " << area << std::endl;
 		if (nameID.GetArea() == area) {
 			//ÎØÈÁÊÀ: Ïîâòîðíîå îáúÿâëåíèå
-			Error err = Error("S", "Variable " + nameID.GetContent() + " is already declared.", name.GetPos().first, name.GetPos().second);
+			Error err = Error("S0010", "Identifier " + nameID.GetContent() + " is already declared.", name.GetPos().first, name.GetPos().second);
 			errlist->Push_back(err);
 			isGood = false;
 			return false;
@@ -87,7 +87,7 @@ bool Syntax::DefineName(Token& name, ID::Type type, std::string area) {
 		cpyID.SetArea(area);
 		if (ids->Find(cpyID) > 0) {
 			//ÎØÈÁÊÀ: Ïîâòîðíîå îáúÿâëåíèå
-			Error err = Error("S", "Variable " + nameID.GetContent() + " is already declared.", name.GetPos().first, name.GetPos().second);
+			Error err = Error("S00010", "Identifier " + nameID.GetContent() + " is already declared.", name.GetPos().first, name.GetPos().second);
 			errlist->Push_back(err);
 			isGood = false;
 			return false;
@@ -263,7 +263,7 @@ bool Syntax::ConstantExpression(Tree* tree, std::string area, int& res) {
 			ID id = ids->At(idx);
 			std::string val = id.GetVal();
 			if (val == "undefined") {
-				Error err = Error("S0010", "Constant must be initialized", token.GetPos().first, token.GetPos().second);
+				Error err = Error("S0020", "Constant must be initialized", token.GetPos().first, token.GetPos().second);
 				errlist->Push_back(err);
 				return false;
 			}
@@ -322,7 +322,7 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 		if (token.GetContent() == "(") {
 			if (!exprExpected) {
 				//Îøèáêà
-				Error err = Error("S", "Unexpected expression found", token.GetPos().first, token.GetPos().second);
+				Error err = Error("S0002", "Unexpected expression found", token.GetPos().first, token.GetPos().second);
 				errlist->Push_back(err);
 				isGood = false;
 				return false;
@@ -423,7 +423,7 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 					result->Push_back(tmp);
 					if (stack.Length() == 0 && tmp.GetContent() != ")") {
 						//Îøèáêà
-						Error err = Error("S", "There is no ( for current )", token.GetPos().first, token.GetPos().second);
+						Error err = Error("S0005", "There is no ( for current )", token.GetPos().first, token.GetPos().second);
 						errlist->Push_back(err);
 						isGood = false;
 						return false;
@@ -439,7 +439,7 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 		if (Constant(token)) {
 			if (!exprExpected) {
 				//Îøèáêà
-				Error err = Error("S", "Unexpected expression found", token.GetPos().first, token.GetPos().second);
+				Error err = Error("S0002", "Unexpected expression found", token.GetPos().first, token.GetPos().second);
 				errlist->Push_back(err);
 				isGood = false;
 				return false;
@@ -459,7 +459,7 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 				Token tmp = stack.Pop_front();
 				if (tmp.GetContent() == "(") {
 					//Îøèáêà
-					Error err = Error("S", "There is no ) for current (", tmp.GetPos().first, tmp.GetPos().second);
+					Error err = Error("S0006", "There is no ) for current (", tmp.GetPos().first, tmp.GetPos().second);
 					errlist->Push_back(err);
 					isGood = false;
 					return false;
@@ -488,7 +488,7 @@ bool Syntax::GetConstPostfix(List<Token>* result, std::string area) {
 		isGood = false;
 
 		if (!exprExpected) {
-			Error err = Error("S", "Illegal expression", token.GetPos().first, token.GetPos().second);
+			Error err = Error("S0000", "Illegal expression", token.GetPos().first, token.GetPos().second);
 			errlist->Push_back(err);
 			return false;
 		}
@@ -680,7 +680,7 @@ bool Syntax::ProcedureSection(Tree* tree, std::string area) {
 
 		if (!CheckProcName(id, idx)) {
 			//Îøèáêà
-			Error err = Error("S", "This procedure is already declared", name.GetPos().first, name.GetPos().second);
+			Error err = Error("S00012", "This procedure is already declared", name.GetPos().first, name.GetPos().second);
 			errlist->Push_back(err);
 			isGood = false;
 			return true;
@@ -867,6 +867,9 @@ bool Syntax::CompoundOperator(Tree* tree, std::string area, std::string label, s
 		semicolon = tokens->At(0);
 	}
 
+	if (!isGood)
+		return false;
+
 	//null-operator
 	NULLOP(tree, label, idx);
 
@@ -943,7 +946,7 @@ bool Syntax::AssigmentOperator(Tree* tree, std::string area, std::string label, 
 		return false;
 	
 	if (Constant(var)) {
-		Error err = Error("S", var.GetContent() + " is a constant identifier. Variable identifier expected", var.GetPos().first, var.GetPos().second);
+		Error err = Error("S0040", var.GetContent() + " is a constant identifier. Variable identifier expected", var.GetPos().first, var.GetPos().second);
 		errlist->Push_back(err);
 		isGood = false;
 		return false;
@@ -993,7 +996,7 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 
 		if (token.GetContent() == "(") {
 			if (!exprExpected) {
-				Error err = Error("S", "Unexpected expression found", token.GetPos().first, token.GetPos().second);
+				Error err = Error("S0002", "Unexpected expression found", token.GetPos().first, token.GetPos().second);
 				errlist->Push_back(err);
 				isGood = false;
 				return false;
@@ -1094,7 +1097,7 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 					result->Push_back(tmp);
 					if (stack.Length() == 0 && tmp.GetContent() != ")") {
 						//Îøèáêà
-						Error err = Error("S", "There is no ( for current )", token.GetPos().first, token.GetPos().second);
+						Error err = Error("S0005", "There is no ( for current )", token.GetPos().first, token.GetPos().second);
 						errlist->Push_back(err);
 						isGood = false;
 						return false;
@@ -1110,7 +1113,7 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 		if (Constant(token) || isVar(token)) {
 			if (!exprExpected) {
 				//Îøèáêà
-				Error err = Error("S", "Unexpected expression found", token.GetPos().first, token.GetPos().second);
+				Error err = Error("S0002", "Unexpected expression found", token.GetPos().first, token.GetPos().second);
 				errlist->Push_back(err);
 				isGood = false;
 				return false;
@@ -1130,7 +1133,7 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 				Token tmp = stack.Pop_front();
 				if (tmp.GetContent() == "(") {
 					//Îøèáêà
-					Error err = Error("S", "There is no ) for current (", tmp.GetPos().first, tmp.GetPos().second);
+					Error err = Error("S0006", "There is no ) for current (", tmp.GetPos().first, tmp.GetPos().second);
 					errlist->Push_back(err);
 					isGood = false;
 					return false;
@@ -1159,7 +1162,7 @@ bool Syntax::GetPostfix(List<Token>* result, std::string area) {
 		isGood = false;
 
 		if (!exprExpected) {
-			Error err = Error("S", "Illegal expression", token.GetPos().first, token.GetPos().second);
+			Error err = Error("S0000", "Illegal expression", token.GetPos().first, token.GetPos().second);
 			errlist->Push_back(err);
 			return false;
 		}
@@ -1268,7 +1271,7 @@ bool Syntax::ProcedureOperator(Tree* tree, std::string area, std::string label, 
 		}
 		expectedName = expectedName.substr(0, length);
 
-		Error err = Error("S", "Wrong number of parameters specified for call to \"" + expectedName + "\"", procName.GetPos().first, procName.GetPos().second);
+		Error err = Error("S0030", "Wrong number of parameters specified for call to \"" + expectedName + "\"", procName.GetPos().first, procName.GetPos().second);
 		errlist->Push_back(err);
 		isGood = false;
 		return true;
@@ -1287,7 +1290,7 @@ bool Syntax::ProcedureOperator(Tree* tree, std::string area, std::string label, 
 		case 'i':
 			if (!isVar(param) && !Constant(param)) {
 				//Îøèáêà
-				Error err = Error("S", "Illegal expression", param.GetPos().first, param.GetPos().second);
+				Error err = Error("S0000", "Illegal expression", param.GetPos().first, param.GetPos().second);
 				errlist->Push_back(err);
 				isGood = false;
 				return true;
@@ -1297,11 +1300,11 @@ bool Syntax::ProcedureOperator(Tree* tree, std::string area, std::string label, 
 			if (!isVar(param)) {
 				//Îøèáêà
 				if (Constant(param)) {
-					Error err = Error("S", "Variable identifier expected", param.GetPos().first, param.GetPos().second);
+					Error err = Error("S0031", "Variable identifier expected", param.GetPos().first, param.GetPos().second);
 					errlist->Push_back(err);
 				}
 				else {
-					Error err = Error("S", "Illegal expression", param.GetPos().first, param.GetPos().second);
+					Error err = Error("S0000", "Illegal expression", param.GetPos().first, param.GetPos().second);
 					errlist->Push_back(err);
 				}
 
@@ -1312,7 +1315,7 @@ bool Syntax::ProcedureOperator(Tree* tree, std::string area, std::string label, 
 		case 'c':
 			if (!isVar(param) && !Constant(param)) {
 				//Îøèáêà
-				Error err = Error("S", "Illegal expression", param.GetPos().first, param.GetPos().second);
+				Error err = Error("S0000", "Illegal expression", param.GetPos().first, param.GetPos().second);
 				errlist->Push_back(err);
 				isGood = false;
 				return true;
@@ -1441,7 +1444,7 @@ bool Syntax::CheckArea(Token& token, std::string area) {
 		return true;
 
 	//Îøèáêà
-	Error err = Error("S", id.GetContent() + " is an undeclared identifier", token.GetPos().first, token.GetPos().second);
+	Error err = Error("S0011", id.GetContent() + " is an undeclared identifier", token.GetPos().first, token.GetPos().second);
 	errlist->Push_back(err);
 	isGood = false;
 
@@ -1468,7 +1471,7 @@ std::string Syntax::GetProcName(ID& procID) {
 void Syntax::EBFError(Token& foundToken, std::string expected) {
 	std::string found = foundToken.GetContent();
 	if (foundToken.GetType() != Token::Type::Id) {
-		Error err = Error("S", expected + " expected but " + found + " found", foundToken.GetPos().first, foundToken.GetPos().second);
+		Error err = Error("S0001", expected + " expected but " + found + " found", foundToken.GetPos().first, foundToken.GetPos().second);
 		errlist->Push_back(err);
 		return;
 	}
@@ -1480,6 +1483,6 @@ void Syntax::EBFError(Token& foundToken, std::string expected) {
 	if (foundID.GetType() == ID::Type::Proc)
 		found = GetProcName(foundID);
 	
-	Error err = Error("S", expected + " expected but " + found + " found", foundToken.GetPos().first, foundToken.GetPos().second);
+	Error err = Error("S0001", expected + " expected but " + found + " found", foundToken.GetPos().first, foundToken.GetPos().second);
 	errlist->Push_back(err);
 }
