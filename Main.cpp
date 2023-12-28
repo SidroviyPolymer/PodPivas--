@@ -27,6 +27,7 @@ int main() {
 			tokos.open("tokens.log");
 			idos.open("idos.log");
 
+			errlist->PrintAllLn(std::cout);
 			errlist->PrintAllLn(erros);
 			tokens->PrintAllLn(tokos);
 			ids->PrintAllLn(idos);
@@ -57,7 +58,11 @@ int main() {
 		Syntax* sx = new Syntax(tokens, ids, errlist);
 		bool sxGood = sx->Process();
 		if (!sxGood) {
+			std::ofstream erros, tokos, idos;
+			erros.open("errors.log");
 			errlist->PrintAllLn(std::cout);
+			errlist->PrintAllLn(erros);
+			erros.close();
 			return 0;
 		}
 

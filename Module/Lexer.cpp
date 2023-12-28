@@ -113,8 +113,10 @@ void Lexer::Parse() {
 		}		
 
 		if (isCommented) {
-			if (tmp == '\n')
+			if (tmp == '\n') {
 				++line;
+				column = 0;
+			}				
 			prev = tmp;
 			continue;
 		}
