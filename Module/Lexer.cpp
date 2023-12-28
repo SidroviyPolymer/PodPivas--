@@ -222,10 +222,17 @@ void Lexer::Parse() {
 
 		word += tmp;		
 
-		if (word == ".") { // Если end. , то прекраща
-			flow->Push_back(word);
+		if (word == "end.") { // Если end. , то прекраща
+			std::string end = word.substr(0, word.length() - 1);
+			flow->Push_back(end);
+			std::string point = ".";
+			flow->Push_back(point);;
 			Pos buf = Pos(line, column + 1 - word.length());
+			buf = Pos(line, column + 1 - word.length());
 			flow2->Push_back(buf);
+			buf = Pos(line, column);
+			flow2->Push_back(buf);
+			word = "";
 			break;
 		}
 

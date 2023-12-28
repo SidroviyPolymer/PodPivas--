@@ -58,7 +58,7 @@ void Syntax::Program() {
 
 	//.
 	Token point = tokens->At(0);
-	if (point.GetContent() != "point") {
+	if (point.GetContent() != ".") {
 		EBFError(point, ".");
 		isGood = false;
 		return;
